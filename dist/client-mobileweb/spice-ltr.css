@@ -28,7 +28,6 @@ html {
 }
 .lineapp_inlineapprovepayview_wrapper {
   width: 245px;
-  height: 225px;
   background: #5fae5d;
   text-align: center;
 }
@@ -57,6 +56,24 @@ html {
   color: #a7f5a4;
   font-size: 23px;
   text-align: center;
+  margin-bottom: 15px;
+}
+.lineapp_inlineapprovepayview_wrapper .submitbutton {
+  background: url(pay-with-paypal.png);
+  width: 227px;
+  height: 42px;
+  background-size: cover;
+  border: 0px;
+  color: transparent;
+}
+.lineapp_inlineapprovepayview_wrapper .close {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 17px;
+  height: 17px;
+  background: url(X.png);
+  background-size: cover;
 }
 .lineapp_inlinelineview_wrapper {
   height: 100%;

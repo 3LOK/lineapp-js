@@ -74,6 +74,10 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
                 var presenter = lineapp.InLineApprovePayPresenter({payKey:e.value.payKey, requests:requests});
                 view.fillApprovePay(presenter.getView());
 
+                presenter.addEventListener("close", function() {
+                    view.closeApprovePay();
+                });
+
                 /*
                 view.approvePayment({payKey:e.value.payKey, callback:function(response) {
                 }});

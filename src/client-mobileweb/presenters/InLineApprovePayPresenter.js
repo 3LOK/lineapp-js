@@ -9,6 +9,10 @@ lineapp.InLineApprovePayPresenter = lineapp.InLineApprovePayPresenter || functio
 
     var view = new lineapp.InLineApprovePayView({payKey:payKey, requests:requests});
 
+    view.addEventListener("close", function() {
+        self.fireEvent("close");
+    });
+
     self.getView = function() {
         return view;
     };
