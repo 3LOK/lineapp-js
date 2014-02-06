@@ -82,8 +82,7 @@ html {
   overflow-y: visible;
 }
 .lineapp_inlinelineview_wrapper .waitingline {
-  position: relative;
-  top: 20px;
+  margin-top: 40px;
 }
 .lineapp_inlinelineview_wrapper .waitingline,
 .lineapp_inlinelineview_wrapper .vipline,
@@ -102,6 +101,20 @@ html {
   border: 2px solid #5fae5d;
   position: absolute;
 }
+.lineapp_inlinelineview_wrapper .waitingline .ask,
+.lineapp_inlinelineview_wrapper .vipline .ask,
+.lineapp_inlinelineview_wrapper .normalline .ask {
+  font-family: Arial;
+  color: white;
+  font-weight: bold;
+  letter-spacing: -0.1em;
+  position: absolute;
+  width: 20px;
+  height: 15px;
+  text-align: center;
+  line-height: 15px;
+  background: #84c182;
+}
 .lineapp_inlinelineview_wrapper .waitingline .info,
 .lineapp_inlinelineview_wrapper .vipline .info,
 .lineapp_inlinelineview_wrapper .normalline .info {
@@ -111,22 +124,6 @@ html {
   height: 31px;
   position: absolute;
   top: 110px;
-}
-.lineapp_inlinelineview_wrapper .waitingline .info .ask,
-.lineapp_inlinelineview_wrapper .vipline .info .ask,
-.lineapp_inlinelineview_wrapper .normalline .info .ask {
-  font-family: Arial;
-  color: white;
-  font-weight: bold;
-  letter-spacing: -0.1em;
-  right: 5px;
-  top: 11px;
-  position: absolute;
-  width: 20px;
-  height: 15px;
-  text-align: center;
-  line-height: 15px;
-  background: #5fae5d;
 }
 .lineapp_inlinelineview_wrapper .waitingline .info .timeinline,
 .lineapp_inlinelineview_wrapper .vipline .info .timeinline,
@@ -184,6 +181,10 @@ html {
   top: -16px;
   left: 15px;
 }
+.lineapp_inlinelineview_wrapper .creature1 .ask {
+  right: 22px;
+  top: -33px;
+}
 .lineapp_inlinelineview_wrapper .creature2 {
   background: url(creature3.png);
   background-size: cover;
@@ -192,6 +193,10 @@ html {
   top: 11px;
   left: 1px;
 }
+.lineapp_inlinelineview_wrapper .creature2 .ask {
+  right: 36px;
+  top: -6px;
+}
 .lineapp_inlinelineview_wrapper .creature3 {
   background: url(creature2.png);
   background-size: cover;
@@ -199,6 +204,10 @@ html {
 .lineapp_inlinelineview_wrapper .creature3 .face {
   top: -3px;
   left: 10px;
+}
+.lineapp_inlinelineview_wrapper .creature3 .ask {
+  right: 27px;
+  top: -20px;
 }
 .lineapp_inlineview_wrapper {
   height: 100%;

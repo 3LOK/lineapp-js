@@ -7,8 +7,7 @@
 
     .waitingline
     {
-        position:relative;
-        top:20px;
+        margin-top:40px;
     }
     .waitingline,
     .vipline,
@@ -27,6 +26,20 @@
             position:absolute;
         }
 
+        .ask
+        {
+            font-family: Arial;
+            color: white;
+            font-weight: bold;
+            letter-spacing: -0.10em;
+            position: absolute;
+            width: 20px;
+            height: 15px;
+            text-align: center;
+            line-height: 15px;
+            background:#84c182;
+        }
+
         .info
         {
             background:url(bottom-info.png);
@@ -35,22 +48,6 @@
             height:31px;
             position:absolute;
             top:110px;
-
-            .ask
-            {
-                font-family: Arial;
-                color: white;
-                font-weight: bold;
-                letter-spacing: -0.10em;
-                right: 5px;
-                top: 11px;
-                position: absolute;
-                width: 20px;
-                height: 15px;
-                text-align: center;
-                line-height: 15px;
-                background:#84c182;
-            }
 
             .timeinline
             {
@@ -116,6 +113,12 @@
             top: -16px;
             left: 15px;
         }
+
+        .ask
+        {
+            right: 22px;
+            top: -33px;
+        }
     }
     .creature2
     {
@@ -127,6 +130,12 @@
             top: 11px;
             left: 1px;
         }
+
+        .ask
+        {
+            right: 36px;
+            top: -6px;
+        }
     }
     .creature3
     {
@@ -137,6 +146,12 @@
         {
             top: -3px;
             left: 10px;
+        }
+
+        .ask
+        {
+            right: 27px;
+            top: -20px;
         }
     }
 }
