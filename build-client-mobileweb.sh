@@ -10,6 +10,7 @@ mkdir $DIST
 
 egrep -v "^include" ./lib/http -d recurse -h --include "*.js" >> $BUILD/app.js
 
+egrep -v "^include" ./src/common -d recurse -h --include "*.js" --exclude "app.js" >> $BUILD/app.js
 egrep -v "^include" ./src/client-mobileweb -d recurse -h --include "*.js" --exclude "app.js" >> $BUILD/app.js
 egrep -v "^include" ./src/client-mobileweb -d recurse -h --include "app.js">> $BUILD/app.js
 
