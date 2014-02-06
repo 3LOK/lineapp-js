@@ -1103,7 +1103,7 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
     var vipLine = $("<div></div>", {"class":"vipline"}).appendTo(waitingLine);
     var normalLine = $("<div></div>", {"class":"normalline"}).appendTo(waitingLine);
 
-    var CREATOR_WIDTH_AND_MARGIN = 68;
+    var CREATOR_WIDTH_AND_MARGIN = 78;
 
     var lineWidth = CREATOR_WIDTH_AND_MARGIN;
 

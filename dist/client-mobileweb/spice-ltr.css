@@ -57,6 +57,7 @@ html {
 .lineapp_inlinelineview_wrapper .vipline .info,
 .lineapp_inlinelineview_wrapper .normalline .info {
   background: url(bottom-info.png);
+  background-size: cover;
   width: 69px;
   height: 31px;
   position: absolute;
@@ -66,7 +67,7 @@ html {
   float: left;
   width: 63px;
   height: 109px;
-  margin-left: 5px;
+  margin-left: 15px;
 }
 .lineapp_inlinelineview_wrapper .desk {
   width: 63px;

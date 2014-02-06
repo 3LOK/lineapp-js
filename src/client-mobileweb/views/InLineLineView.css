@@ -30,10 +30,11 @@
         .info
         {
             background:url(bottom-info.png);
+            background-size:cover;
             width:69px;
             height:31px;
             position:absolute;
-            top:103px;
+            top:110px;
         }
     }
 
@@ -41,7 +42,7 @@
         float:left;
         width:63px;
         height:109px;
-        margin-left:5px;
+        margin-left:15px;
     }
 
     .desk {
