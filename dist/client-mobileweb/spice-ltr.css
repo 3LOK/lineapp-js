@@ -24,7 +24,12 @@ html {
 .lineapp_inlinelineview_wrapper {
   height: 100%;
   width: 100%;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+.lineapp_inlinelineview_wrapper .waitingline {
+  position: relative;
+  top: 20px;
 }
 .lineapp_inlinelineview_wrapper .waitingline,
 .lineapp_inlinelineview_wrapper .vipline,
@@ -32,34 +37,68 @@ html {
   height: 100%;
   float: left;
   position: relative;
+  overflow-y: visible;
+}
+.lineapp_inlinelineview_wrapper .waitingline .face,
+.lineapp_inlinelineview_wrapper .vipline .face,
+.lineapp_inlinelineview_wrapper .normalline .face {
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  border: 2px solid #5fae5d;
+  position: absolute;
+}
+.lineapp_inlinelineview_wrapper .waitingline .ask,
+.lineapp_inlinelineview_wrapper .vipline .ask,
+.lineapp_inlinelineview_wrapper .normalline .ask {
+  position: absolute;
+  top: 103px;
 }
 .lineapp_inlinelineview_wrapper .spotsaver {
   float: left;
-  width: 50px;
-  height: 100%;
+  width: 63px;
+  height: 109px;
   margin-left: 5px;
 }
 .lineapp_inlinelineview_wrapper .desk {
-  width: 50px;
-  height: 100%;
+  width: 63px;
+  height: 109px;
   background: black;
   float: left;
 }
-.lineapp_inlinelineview_wrapper .vip {
-  width: 50px;
-  height: 100%;
+.lineapp_inlinelineview_wrapper .vip,
+.lineapp_inlinelineview_wrapper .normal {
+  width: 63px;
+  height: 109px;
   background: red;
   position: absolute;
   top: 0px;
   left: 0px;
+  overflow: visible;
 }
-.lineapp_inlinelineview_wrapper .normal {
-  width: 50px;
-  height: 100%;
-  background: green;
-  position: absolute;
-  top: 0px;
-  left: 0px;
+.lineapp_inlinelineview_wrapper .creature1 {
+  background: url(creature1.png);
+  background-size: cover;
+}
+.lineapp_inlinelineview_wrapper .creature1 .face {
+  top: -16px;
+  left: 15px;
+}
+.lineapp_inlinelineview_wrapper .creature2 {
+  background: url(creature3.png);
+  background-size: cover;
+}
+.lineapp_inlinelineview_wrapper .creature2 .face {
+  top: 11px;
+  left: 1px;
+}
+.lineapp_inlinelineview_wrapper .creature3 {
+  background: url(creature2.png);
+  background-size: cover;
+}
+.lineapp_inlinelineview_wrapper .creature3 .face {
+  top: -3px;
+  left: 10px;
 }
 .lineapp_inlineview_wrapper {
   height: 100%;

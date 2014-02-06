@@ -1015,7 +1015,9 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
     var vipLine = $("<div></div>", {"class":"vipline"}).appendTo(waitingLine);
     var normalLine = $("<div></div>", {"class":"normalline"}).appendTo(waitingLine);
 
-    var lineWidth = 55;
+    var CREATOR_WIDTH_AND_MARGIN = 68;
+
+    var lineWidth = CREATOR_WIDTH_AND_MARGIN;
 
     self.initLines = function(lines) {
         vipLine.empty();
@@ -1033,7 +1035,7 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
     };
 
     function addVipPerson(person) {
-        lineWidth += 55;
+        lineWidth += CREATOR_WIDTH_AND_MARGIN;
         waitingLine.css({"width":lineWidth});
 
         var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(vipLine);
@@ -1043,23 +1045,38 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
                 .hide()
                 .appendTo(vipLine)
                 .fadeIn({complete:nextAnimation});
-            peopleDivs[person.id] = {dom:dom, spot:spot};
+
+            var face = $("<img />", {"class":"face"}).appendTo(dom);
+            face.attr("src", "http://graph.facebook.com/"+person.id+"/picture?type=square");
+
+            var ask = $("<div></div>", {"class":"ask"}).html(person.ask).appendTo(dom);
+
+            dom.addClass("creature"+((person.id % 3) +1));
+
+            peopleDivs[person.id] = {dom:dom, spot:spot, ask:ask};
         });
     }
 
     function addNormalPerson(person) {
-        lineWidth += 55;
+        lineWidth += CREATOR_WIDTH_AND_MARGIN;
         waitingLine.css({"width":lineWidth});
 
         var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(normalLine);
         _.defer(function() {
             var dom = $("<div></div>", {"class":"normal"})
-                .html(person.ask)
                 .css({left:spot.position().left+5})
                 .hide()
                 .appendTo(normalLine)
                 .fadeIn({complete:nextAnimation});
-            peopleDivs[person.id] = {dom:dom, spot:spot};
+
+            var face = $("<img />", {"class":"face"}).appendTo(dom);
+            face.attr("src", "http://graph.facebook.com/"+person.id+"/picture?type=square");
+
+            var ask = $("<div></div>", {"class":"ask"}).html(person.ask).appendTo(dom);
+
+            dom.addClass("creature"+((person.id % 3) +1));
+
+            peopleDivs[person.id] = {dom:dom, spot:spot, ask:ask};
         });
     }
 
@@ -1075,7 +1092,7 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         var person = params.person;
         var amount = params.amount;
 
-        peopleDivs[person.id].dom.html(amount);
+        peopleDivs[person.id].ask.html(amount);
     };
 
     var animations = [];
@@ -1128,7 +1145,7 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
                 peopleDivs[person.id].dom = null;
                 if (!peopleDivs[person.id].spot) {
                     delete peopleDivs[person.id];
-                    lineWidth -= 55;
+                    lineWidth -= CREATOR_WIDTH_AND_MARGIN;
                     waitingLine.css({"width":lineWidth});
                     nextAnimation();
                 }

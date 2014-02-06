@@ -2,47 +2,95 @@
 {
     height:100%;
     width: 100%;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y:visible;
 
+    .waitingline
+    {
+        position:relative;
+        top:20px;
+    }
     .waitingline,
     .vipline,
     .normalline {
         height:100%;
         float:left;
         position:relative;
+        overflow-y:visible;
+
+        .face 
+        {
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            border: 2px solid #5fae5d;
+            position:absolute;
+        }
+
+        .ask
+        {
+            position:absolute;
+            top:103px;
+        }
     }
 
     .spotsaver {
         float:left;
-        width:50px;
-        height:100%;
+        width:63px;
+        height:109px;
         margin-left:5px;
     }
 
     .desk {
-        width:50px;
-        height:100%;
+        width:63px;
+        height:109px;
         background:black;
         float:left;
     }
 
-    .vip 
+    .vip ,
+    .normal 
     {
-        width:50px;
-        height:100%;
+        width:63px;
+        height:109px;
         background:red;
         position:absolute;
         top:0px;
         left:0px;
+        overflow:visible;
     }
 
-    .normal 
+    .creature1
     {
-        width:50px;
-        height:100%;
-        background:green;
-        position:absolute;
-        top:0px;
-        left:0px;
+        background:url(creature1.png);
+        background-size:cover;
+
+        .face 
+        {
+            top: -16px;
+            left: 15px;
+        }
+    }
+    .creature2
+    {
+        background:url(creature3.png);
+        background-size:cover;
+
+        .face 
+        {
+            top: 11px;
+            left: 1px;
+        }
+    }
+    .creature3
+    {
+        background:url(creature2.png);
+        background-size:cover;
+
+        .face 
+        {
+            top: -3px;
+            left: 10px;
+        }
     }
 }
