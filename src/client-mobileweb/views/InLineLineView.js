@@ -37,8 +37,6 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         lineWidth += CREATOR_WIDTH_AND_MARGIN;
         waitingLine.css({"width":lineWidth});
 
-        console.log(person.ask);
-
         var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(line);
         _.defer(function() {
             var dom = $("<div></div>", {"class":"person"})
@@ -51,7 +49,7 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
             face.attr("src", "http://graph.facebook.com/"+person.id+"/picture?type=square");
 
             var ask = $("<div></div>", {"class":"info"})
-                .html((person.ask || {}).price || "N/A")
+                .html((person.ask || {}).amount || "N/A")
                 .appendTo(dom);
 
             dom.addClass("creature"+((person.id % 3) +1));

@@ -24,9 +24,10 @@ lineapp.InLineConfigView = lineapp.InLineConfigView || function(params) { return
     $("<option></option>", {"value":300, "html":"$3"}).appendTo(ask);
     $("<option></option>", {"value":400, "html":"$4"}).appendTo(ask);
     $("<option></option>", {"value":500, "html":"$5"}).appendTo(ask);
-    $("<option></option>", {"value":1000, "html":"$10"}).appendTo(ask);
-    $("<option></option>", {"value":1500, "html":"$15"}).appendTo(ask);
-    $("<option></option>", {"value":2000, "html":"$20"}).appendTo(ask);
+    $("<option></option>", {"value":600, "html":"$6"}).appendTo(ask);
+    $("<option></option>", {"value":700, "html":"$7"}).appendTo(ask);
+    $("<option></option>", {"value":800, "html":"$8"}).appendTo(ask);
+    $("<option></option>", {"value":900, "html":"$9"}).appendTo(ask);
 
     ask.change(function() {
         self.fireEvent("setprice", {value:ask.val()});
