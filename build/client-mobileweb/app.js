@@ -211,7 +211,7 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
 
         // TODO: Check if user is already in line?
         
-        lines.NORMAL.push({id:event.clientId.id, clientId:event.clientId, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp});
+        lines.NORMAL.push({id:event.clientId.id, clientId:event.clientId, ask:null, joinTimestamp:event.timestamp});
     }
 
     function onLeaveEvent(event) {
@@ -226,13 +226,13 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
     function onSetPriceEvent(event) {
         _.each(lines.NORMAL, function(p) {
             if (p.id === event.clientId.id) {
-                p.ask = event.price.amount;
+                p.ask = event.price;
             }
         });
 
         _.each(lines.VIP, function(p) {
             if (p.id === event.clientId.id) {
-                p.ask = event.price.amount;
+                p.ask = event.price;
             }
         });
     }
@@ -676,7 +676,7 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
         if (myPos.lineId !== theirPos.lineId) return; // Don't let swapping between lines (TODO: move to VIP?)
         if (myPos.pos < theirPos.pos) return; // Don't swap back
 
-        var clientIds = _.pluck(clientIds[myPos.lineId], "clientId");
+        var clientIds = clientIds[myPos.lineId];
 
         clientIds = _.first(clientIds, myPos.pos);
 
@@ -684,10 +684,30 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
 
         clientIds.reverse();
 
+        var prices = _.pluck(clientIds, "ask");
+        var clientIds = _.pluck(clientIds, "clientId");
+
+        console.log(clientIds, prices);
+
+        /*
+        lineapp.LineAppService.request({
+            request:{
+                "type":"create_payment",
+                "paymentRequests":prices,
+            },
+            callback:function(e) {
+                console.log(e);
+            }
+        });
+       */
+
+        /*
+
         lineManagement.performEvents([{type:"swap", 
                                      clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}, 
                                      clientIds:clientIds,
                                      payKey:"TODO"}]);
+                                    */
     });
 
     self.close = function() {
@@ -773,7 +793,7 @@ lineapp.InLineLinePresenter = lineapp.InLineLinePresenter || function(params) { 
             console.log("Handling", event.type);
             switch (event.type) {
                 case "join":
-                    view.onJoinEvent({person:{id:event.clientId.id, clientId:event.clientId, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp}}); 
+                    view.onJoinEvent({person:{id:event.clientId.id, clientId:event.clientId, ask:null, joinTimestamp:event.timestamp}}); 
                     break;
                 case "leave":
                     view.onLeaveEvent({person:{id:event.clientId.id, clientId:event.clientId}}); 
@@ -1126,6 +1146,8 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         lineWidth += CREATOR_WIDTH_AND_MARGIN;
         waitingLine.css({"width":lineWidth});
 
+        console.log(person.ask);
+
         var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(line);
         _.defer(function() {
             var dom = $("<div></div>", {"class":"person"})
@@ -1137,7 +1159,9 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
             var face = $("<img />", {"class":"face"}).appendTo(dom);
             face.attr("src", "http://graph.facebook.com/"+person.id+"/picture?type=square");
 
-            var ask = $("<div></div>", {"class":"info"}).html(person.ask).appendTo(dom);
+            var ask = $("<div></div>", {"class":"info"})
+                .html((person.ask || {}).price || "N/A")
+                .appendTo(dom);
 
             dom.addClass("creature"+((person.id % 3) +1));
 

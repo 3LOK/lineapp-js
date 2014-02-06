@@ -47,7 +47,7 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
         if (myPos.lineId !== theirPos.lineId) return; // Don't let swapping between lines (TODO: move to VIP?)
         if (myPos.pos < theirPos.pos) return; // Don't swap back
 
-        var clientIds = _.pluck(clientIds[myPos.lineId], "clientId");
+        var clientIds = clientIds[myPos.lineId];
 
         clientIds = _.first(clientIds, myPos.pos);
 
@@ -55,10 +55,30 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
 
         clientIds.reverse();
 
+        var prices = _.pluck(clientIds, "ask");
+        var clientIds = _.pluck(clientIds, "clientId");
+
+        console.log(clientIds, prices);
+
+        /*
+        lineapp.LineAppService.request({
+            request:{
+                "type":"create_payment",
+                "paymentRequests":prices,
+            },
+            callback:function(e) {
+                console.log(e);
+            }
+        });
+       */
+
+        /*
+
         lineManagement.performEvents([{type:"swap", 
                                      clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}, 
                                      clientIds:clientIds,
                                      payKey:"TODO"}]);
+                                    */
     });
 
     self.close = function() {
@@ -144,7 +164,7 @@ lineapp.InLineLinePresenter = lineapp.InLineLinePresenter || function(params) { 
             console.log("Handling", event.type);
             switch (event.type) {
                 case "join":
-                    view.onJoinEvent({person:{id:event.clientId.id, clientId:event.clientId, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp}}); 
+                    view.onJoinEvent({person:{id:event.clientId.id, clientId:event.clientId, ask:null, joinTimestamp:event.timestamp}}); 
                     break;
                 case "leave":
                     view.onLeaveEvent({person:{id:event.clientId.id, clientId:event.clientId}}); 

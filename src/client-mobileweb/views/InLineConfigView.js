@@ -6,7 +6,7 @@ lineapp.InLineConfigView = lineapp.InLineConfigView || function(params) { return
 
     var joinTimestamp = null;
 
-    var wrapper = $("<div></div>");
+    var wrapper = $("<div></div>", {"class":"lineapp_inlineconfigview_wrapper"});
 
     var pos = $("<div></div>", {"class":"position"}).appendTo(wrapper);
     var timeInLine = $("<div></div>", {"class":"timeinline"}).appendTo(wrapper);

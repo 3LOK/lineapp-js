@@ -78,7 +78,7 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
 
         // TODO: Check if user is already in line?
         
-        lines.NORMAL.push({id:event.clientId.id, clientId:event.clientId, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp});
+        lines.NORMAL.push({id:event.clientId.id, clientId:event.clientId, ask:null, joinTimestamp:event.timestamp});
     }
 
     function onLeaveEvent(event) {
@@ -93,13 +93,13 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
     function onSetPriceEvent(event) {
         _.each(lines.NORMAL, function(p) {
             if (p.id === event.clientId.id) {
-                p.ask = event.price.amount;
+                p.ask = event.price;
             }
         });
 
         _.each(lines.VIP, function(p) {
             if (p.id === event.clientId.id) {
-                p.ask = event.price.amount;
+                p.ask = event.price;
             }
         });
     }
