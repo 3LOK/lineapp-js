@@ -3,7 +3,7 @@ var lineapp = lineapp || {};
 lineapp.LineAppView = lineapp.LineAppView || function(params) { return (function(params) {
     var self = new lineapp.EventHub();
 
-    var wrapper = $("<div></div>");
+    var wrapper = $("<div></div>", {"class":"lineapp_lineappview_wrapper"});
 
     self.showWaiting = function() {
         // TODO;
@@ -15,7 +15,17 @@ lineapp.LineAppView = lineapp.LineAppView || function(params) { return (function
 
     self.showLogin = function(view) {
         wrapper.empty();
-        wrapper.add(view.getDom());
+        wrapper.append(view.getDom());
+    };
+
+    self.showGetInLineView = function(view) {
+        wrapper.empty();
+        wrapper.append(view.getDom());
+    };
+
+    self.showInLineView = function(view) {
+        wrapper.empty();
+        wrapper.append(view.getDom());
     };
 
     self.getDom = function() {

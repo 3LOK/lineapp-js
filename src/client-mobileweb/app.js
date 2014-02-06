@@ -14,14 +14,14 @@ function init(params) {
 
     lineapp.LineAppService.init({client:client});
 
-	var fbAppId = "136436869735932";
+	var fbAppId = "471521269618702";
     lineapp.Facebook.init({
         appId : fbAppId,
         channelUrl : localurl + "/static/channel.html",
     });
 
     var presenter = lineapp.LineAppPresenter();
-    $(body).append(presenter.getView());
+    $(body).append(presenter.getView().getDom());
     presenter.open();
 }
 

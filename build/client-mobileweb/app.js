@@ -3,6 +3,30 @@ http.Factory=http.Factory||function(){return{create:function(a){var a=a||{},d=a.
 e;c.onerror=f;c.onprogress=g;c.ontimeout=a;c.setUserAgent=function(){};return c}if("undefined"!==typeof Ti){var h=Ti.Network.createHTTPClient({timeout:d,onload:e,onerror:f,onprogress:g,ontimeout:a});h.setUserAgent=function(a){h.setRequestHeader("User-Agent",a)};return h}throw Error("Could not find an HttpClient implementation.");}}}();http.create=http.create||http.Factory.create;
 var lineapp = lineapp || {};
 
+lineapp.Client = lineapp.Client || function(params) { return (function(params) {
+	params = params || {};
+	var apiUrl = params.apiUrl || "https://lineapp-prod.appspot.com/v1.0";
+	
+	var self = {};
+	
+	var protocol = new lineapp.Protocol();
+	
+	self.request = function(params) {
+		params = params || {};
+		var request = params.request || null;
+		var callback = params.callback || function(response){};
+		
+		protocol.post({
+			url : apiUrl,
+			obj : request,
+			callback : callback
+		});
+	};
+	
+	return self;
+}(params))};
+var lineapp = lineapp || {};
+
 lineapp.EventHub = lineapp.EventHub || function() { return (function() {
 	var self = {};
 	var listenersMap = {};
@@ -73,27 +97,223 @@ lineapp.EventHub = lineapp.EventHub || function() { return (function() {
 }())};
 var lineapp = lineapp || {};
 
+lineapp.LineAppService = lineapp.LineAppService || (function() {
+	var self = new lineapp.EventHub();
+
+	var client = null;
+	var searchCache = null;
+
+    var requests = {};
+	
+	self.request = function(params) {
+		params = params || {};
+		var request = params.request || {};
+        var promise = params.promise || new utils.Promise();
+        if (params.callback) {
+            var callback = params.callback;
+            promise.done(function(/* args... */) {
+                callback.apply(this, arguments);
+            });
+        };
+
+		client.request({
+			request : request,
+			callback : function(response) {
+                promise.resolve(response);
+			}
+		});
+	};
+	
+	self.init = function(params) {
+		params = params || {};
+		client = params.client || null;
+	};
+	
+	return self;
+}());
+var lineapp = lineapp || {};
+
 lineapp.LineManagement = lineapp.LineManagement || function(params) { return (function(params) {
     var self = new lineapp.EventHub();
 
-    var lines = {};
+    var DEFAULT_PRICE = 500;
 
-    self.init = function(events) {
-        // TODO
+    var lines = {};
+    var vipPrice = null;
+    var israeliMode = false;
+
+    self.init = function(params) {
+        var events = params.events;
+        
+        var first = events.shift();
+
+        if (first.type !== "create") {
+            alert("First event is not create!");
+            return;
+        }
+
+        vipPrice = first.vipPrice;
+        israeliMode = first.israeliMode;
+
+        lines = {
+            NORMAL:[],
+            VIP:[]
+        };
+
+        _.each(events, handleEvent);
     };
 
     self.handleEvents = function(events) {
+
+        _.each(events, handleEvent);
+
+        self.fireEvent("changed", {events:events});
+
     };
 
     function handleEvent(event) {
+        switch (event.type) {
+            case "join":onJoinEvent(event); break;
+            default:console.warn("Unkown event type", event);
+        }
     }
 
-    self.getLines = function(params) {
-        // TODO
+    function onJoinEvent(event) {
+
+        // TODO: Check if user is already in line?
+        
+        lines.NORMAL.push({id:event.clientId, ask:DEFAULT_PRICE});
+    }
+
+    self.getLines = function() {
+        return lines;
     };
 
 	return self;
 }(params))};
+var lineapp = lineapp || {};
+
+lineapp.getDefaultUserAgent = function() {
+	return "lineapp4js (gzip)";  // required to enable AppEngine gzip compression on Titanium
+};
+
+lineapp.Protocol = lineapp.Protocol || function(params) { return (function(params) {
+	params = params || {};
+	var userAgent = params.userAgent || lineapp.getDefaultUserAgent();
+
+	var self = {};
+	
+	self.post = function(params) {
+		var url = params.url || null;
+		var obj = params.obj || null;
+		var callback = params.callback || function(e){};
+		var timeout = params.timeout || 60000;
+		
+		var client = http.create({
+			onload : function(e) {
+				callback(JSON.parse(client.responseText));
+			},
+			onerror : function(e) {
+				callback({
+					error : {
+						code : "protocol",
+						message : "protocol error"
+					}
+				});
+			},
+			timeout : timeout
+		});
+	
+		client.open("POST", url);
+		client.setUserAgent(userAgent);
+		client.setRequestHeader("Content-Type", "application/json");
+		client.setRequestHeader("Accept", "application/json");
+		
+		client.send(JSON.stringify(obj));
+	};
+
+	return self;
+}(params))};
+var utils = utils || {};
+
+utils.Promise = utils.Promise || (function() {
+    var resolved = false;
+    var callbacks = [];
+    var value;
+
+    function checkCallbacks() {
+        if (!resolved) return;
+        while (callbacks.length > 0) {
+            callbacks.pop().apply(this, value);
+        }
+    };
+
+    this.done = function(callback) {
+        callbacks.push(callback);
+        checkCallbacks();
+        return this;
+    };
+
+    this.resolve = function(/* values */) {
+        value = _.toArray(arguments);
+        resolved = true;
+        checkCallbacks();
+    };
+
+    this.isResolved = function() {
+        return resolved;
+    };
+
+    this.getValue = function() {
+        return value;
+    };
+
+    return this;
+});
+
+/*
+ * Usage:
+ *
+ * function f1(promise) { 
+ *   do_stuff();
+ *   promise.resolve("f1_done");
+ * }
+ * function f2() {
+ *   var myPromise = new utils.Promise();
+ *   do_stuff_with_callback(function () {
+ *      myPromise.resolve("f2_done");
+ *   });
+ *   
+ *   return myPromise;
+ * }
+ * when(f1, f2).done(function(f1_value, f2_value) {
+ *   console.log(f1_value, f2_value);
+ * })
+ */
+utils.Promise.when = function (/* callbacks... */) {
+    var count = arguments.length, resolved = false, subPromises = [],
+        promise = new utils.Promise();
+
+    function checkDone() {
+        if (resolved) return;
+        if (_.all(_.invoke(subPromises, 'isResolved'))) {
+            promise.resolve.apply(this,
+                _.map(subPromises, function (subPromise) { return subPromise.getValue()[0]; }));
+        }
+    }
+    _.each(arguments, function(callback, index) {
+        var subPromise = new utils.Promise().done(checkDone);
+        subPromises.push(subPromise);
+        var ret = callback(subPromise);
+        // If got a promise, pipe it to resolve subPromise
+        if (ret instanceof utils.Promise) {
+            ret.done(function (value) {
+                subPromise.resolve(value);
+            });
+        }
+    });
+    return promise;
+};
 var lineapp = lineapp || {};
 
 if (typeof(FB) !== "undefined")
@@ -256,6 +476,40 @@ else
 }
 var lineapp = lineapp || {};
 
+lineapp.GetInLinePresenter = lineapp.GetInLinePresenter || function(params) { return (function(params) {
+
+    var self = new lineapp.EventHub();
+
+    var view = new lineapp.GetInLineView();
+
+    view.addEventListener("lineup", function(e) {
+        self.fireEvent("lineup", e);
+    });
+
+    self.getView = function() {
+        return view;
+    };
+    
+	return self;
+}(params))};
+
+var lineapp = lineapp || {};
+
+lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (function(params) {
+
+    var self = new lineapp.EventHub();
+
+    var view = new lineapp.InLineView();
+
+    self.getView = function() {
+        return view;
+    };
+    
+	return self;
+}(params))};
+
+var lineapp = lineapp || {};
+
 lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return (function(params) {
 
     var self = new lineapp.EventHub();
@@ -267,27 +521,101 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
     var LINEID = "1";
 
     self.open = function() {
+        
+        console.log("open >> Start.")
 
         if (lineapp.Facebook.getLoggedIn()) {
+            console.log("open >> Already logged in.")
             onLogin();
         } else {
+            console.log("open >> Logging in.")
+
+            lineapp.Facebook.addEventListener("login", function(e) {
+                console.log("open >> Logged in.", e)
+                onLogin();
+            });
+
             // Login screen?
             lineapp.Facebook.authorize();
         }
     };
 
+    var loginCalled = false;
     function onLogin() {
-        // TODO: 1. Get line events
-        // TODO: 2. Build line management
-        // TODO: 3. See if we're in line.
-        // TODO:   if so, display main screen
-        // TODO:   otherwise, display waiting in line screen
-    };
+        if (loginCalled) {
+            console.warn("onLogin >> called twice.");
+            return;
+        }
+        loginCalled = true;
+
+        console.log("onLogin >> Start.");
+
+        /* TODO
+        // Get line events
+        lineapp.LineAppService.request({
+            request:{
+                type:"get_events",
+                lineId:LINEID
+            },
+            callback:function(response) {
+
+                if (response.error) {
+                    alert(response.error.message);
+                }
+
+               onEvents(response.events);
+            }
+        });
+       */
+
+      onEvents([
+          {type:"create", vipPrice:10000, israeliMode:false}
+      ]);
+    }
+
+    function onEvents(events) {
+
+        console.log("onEvents >> Start.", events);
+
+        // Build line management
+        lineManagement.init({events:events});
+
+        // See if we're in line.
+        var lines = _.values(lineManagement.getLines());
+        var inLine = _.chain(lines).flatten().pluck("id").contains(lineapp.Facebook.getUid()).value();
+
+        console.log("onEvents >> inLine", inLine);
+
+        if (inLine) {
+            // if so, display main screen
+            onInLine();
+        } else {
+            // otherwise, display waiting in line screen
+            onNotInLine();
+        }
+    }
 
     function onNotInLine() {
+        var presenter = new lineapp.GetInLinePresenter();
+        view.showGetInLineView(presenter.getView());
+
+        // Listen to join line request
+        presenter.addEventListener("lineup", function() {
+            // TODO: send it as an event
+            _.defer(function() {
+                lineManagement.handleEvents([
+                    {type:"join", clientId:lineapp.Facebook.getUid()}
+                ])
+
+                onInLine();
+            });
+        });
     }
 
     function onInLine() {
+
+        var presenter = new lineapp.InLinePresenter();
+        view.showInLineView(presenter.getView());
     }
 
     self.getView = function() {
@@ -298,10 +626,52 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 }(params))};
 var lineapp = lineapp || {};
 
-lineapp.LineAppView = lineapp.LineAppView || function(params) { return (function(params) {
+lineapp.GetInLineView = lineapp.GetInLineView || function(params) { return (function(params) {
+
     var self = new lineapp.EventHub();
 
     var wrapper = $("<div></div>");
+
+    var button = $("<button></button>")
+                    .html("Get In Line!")
+                    .appendTo(wrapper);
+
+    button.on("click", function() {
+        self.fireEvent("lineup");
+    });
+
+    self.getDom = function() {
+        return wrapper;
+    };
+    
+	return self;
+}(params))};
+
+
+var lineapp = lineapp || {};
+
+lineapp.InLineView = lineapp.InLineView || function(params) { return (function(params) {
+
+    var self = new lineapp.EventHub();
+
+    var wrapper = $("<div></div>");
+
+    $("<div>In Line!</div>").appendTo(wrapper);
+
+    self.getDom = function() {
+        return wrapper;
+    };
+    
+	return self;
+}(params))};
+
+
+var lineapp = lineapp || {};
+
+lineapp.LineAppView = lineapp.LineAppView || function(params) { return (function(params) {
+    var self = new lineapp.EventHub();
+
+    var wrapper = $("<div></div>", {"class":"lineapp_lineappview_wrapper"});
 
     self.showWaiting = function() {
         // TODO;
@@ -313,7 +683,17 @@ lineapp.LineAppView = lineapp.LineAppView || function(params) { return (function
 
     self.showLogin = function(view) {
         wrapper.empty();
-        wrapper.add(view.getDom());
+        wrapper.append(view.getDom());
+    };
+
+    self.showGetInLineView = function(view) {
+        wrapper.empty();
+        wrapper.append(view.getDom());
+    };
+
+    self.showInLineView = function(view) {
+        wrapper.empty();
+        wrapper.append(view.getDom());
     };
 
     self.getDom = function() {
@@ -332,21 +712,20 @@ if (typeof(console) === "undefined") {
 // Note: 'organizationFull' var is initialized externally
 var localurl = window.location.protocol + "//"+window.location.host;
 
-/*
-var client = new lineapp.Client({
-	apiUrl : spiceApiUrl
-});
-*/
+var client = new lineapp.Client();
 
 function init(params) {
-	var fbAppId = "136436869735932";
+
+    lineapp.LineAppService.init({client:client});
+
+	var fbAppId = "471521269618702";
     lineapp.Facebook.init({
         appId : fbAppId,
         channelUrl : localurl + "/static/channel.html",
     });
 
     var presenter = lineapp.LineAppPresenter();
-    $(body).append(presenter.getView());
+    $(body).append(presenter.getView().getDom());
     presenter.open();
 }
 
