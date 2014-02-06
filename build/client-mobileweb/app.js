@@ -1228,13 +1228,21 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
             var face = $("<img />", {"class":"face"}).appendTo(dom);
             face.attr("src", "http://graph.facebook.com/"+person.id+"/picture?type=square");
 
-            var ask = $("<div></div>", {"class":"info"})
-                .html((person.ask || {}).amount || "N/A")
-                .appendTo(dom);
+            var info = $("<div></div>", {"class":"info"}).appendTo(dom);
+            var ask = $("<div></div>", {"class":"ask"}).appendTo(dom);
+            ask.html("$"+(person.ask || {}).amount/100 || "5");
+
+            var eta = $("<div></div>", {"class":"timeinline"})
+                .html("12 mins")
+                .appendTo(info);
+
+            $("<div></div>", {"class":"timeinlinetitle"})
+                .html("ETA")
+                .appendTo(info);
 
             dom.addClass("creature"+((person.id % 3) +1));
 
-            peopleDivs[person.id] = {dom:dom, spot:spot, ask:ask};
+            peopleDivs[person.id] = {dom:dom, spot:spot, info:info, ask:ask, eta:eta};
 
             if (person.id !== lineapp.Facebook.getUid()) {
                 dom.on("click", function() {
@@ -1256,7 +1264,7 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         var person = params.person;
         var amount = params.amount;
 
-        peopleDivs[person.id].ask.html(amount);
+        peopleDivs[person.id].ask.html("$"+amount/100);
     };
 
     self.onSwapEvent = function(params) {

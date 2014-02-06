@@ -35,6 +35,48 @@
             height:31px;
             position:absolute;
             top:110px;
+
+            .ask
+            {
+                font-family: Arial;
+                color: white;
+                font-weight: bold;
+                letter-spacing: -0.10em;
+                right: 5px;
+                top: 11px;
+                position: absolute;
+                width: 20px;
+                height: 15px;
+                text-align: center;
+                line-height: 15px;
+                background:#84c182;
+            }
+
+            .timeinline
+            {
+                position: absolute;
+                left: 0px;
+                width: 45px;
+                height: 13px;
+                font-size: 10px;
+                top: 7px;
+                text-align: center;
+                line-height: 13px;
+                color: #357134;
+            }
+
+            .timeinlinetitle
+            {
+                position: absolute;
+                left: 0px;
+                width: 45px;
+                height: 13px;
+                font-size: 7px;
+                top: 18px;
+                text-align: center;
+                line-height: 13px;
+                color: #9bb49b;
+            }
         }
     }
 

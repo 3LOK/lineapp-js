@@ -112,6 +112,48 @@ html {
   position: absolute;
   top: 110px;
 }
+.lineapp_inlinelineview_wrapper .waitingline .info .ask,
+.lineapp_inlinelineview_wrapper .vipline .info .ask,
+.lineapp_inlinelineview_wrapper .normalline .info .ask {
+  font-family: Arial;
+  color: white;
+  font-weight: bold;
+  letter-spacing: -0.1em;
+  right: 5px;
+  top: 11px;
+  position: absolute;
+  width: 20px;
+  height: 15px;
+  text-align: center;
+  line-height: 15px;
+  background: #5fae5d;
+}
+.lineapp_inlinelineview_wrapper .waitingline .info .timeinline,
+.lineapp_inlinelineview_wrapper .vipline .info .timeinline,
+.lineapp_inlinelineview_wrapper .normalline .info .timeinline {
+  position: absolute;
+  left: 0px;
+  width: 45px;
+  height: 13px;
+  font-size: 10px;
+  top: 7px;
+  text-align: center;
+  line-height: 13px;
+  color: #357134;
+}
+.lineapp_inlinelineview_wrapper .waitingline .info .timeinlinetitle,
+.lineapp_inlinelineview_wrapper .vipline .info .timeinlinetitle,
+.lineapp_inlinelineview_wrapper .normalline .info .timeinlinetitle {
+  position: absolute;
+  left: 0px;
+  width: 45px;
+  height: 13px;
+  font-size: 7px;
+  top: 18px;
+  text-align: center;
+  line-height: 13px;
+  color: #9bb49b;
+}
 .lineapp_inlinelineview_wrapper .spotsaver {
   float: left;
   width: 63px;
