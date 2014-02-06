@@ -1,0 +1,37 @@
+.lineapp_inlineapprovepayview_wrapper
+{
+    width:245px; height:225px;
+    background:#5fae5d;
+    text-align:center;
+
+    .header
+    {
+        background:url(yay.png);
+        background-size:cover;
+        width:52px;
+        height:32px;
+        margin:auto;
+        color:white;
+        margin-top:35px;
+        margin-bottom:10px;
+    }
+
+    .info
+    {
+        font-family: 'Duru Sans', sans-serif;
+        color:#a7f5a4; font-size:12px; 
+        line-height:20px; 
+        letter-spacing:-0.05em;
+        width: 95%;
+        margin: auto;
+    }
+
+    .amount
+    {
+        font-family:Arial;
+        font-weight:bold;
+        color:#a7f5a4;
+        font-size:23px;
+        text-align:center;
+    }
+}
