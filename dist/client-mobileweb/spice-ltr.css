@@ -21,3 +21,65 @@ html {
 .alignend {
   text-align: right;
 }
+.lineapp_inlinelineview_wrapper {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+.lineapp_inlinelineview_wrapper .waitingline,
+.lineapp_inlinelineview_wrapper .vipline,
+.lineapp_inlinelineview_wrapper .normalline {
+  height: 100%;
+  float: left;
+  position: relative;
+}
+.lineapp_inlinelineview_wrapper .spotsaver {
+  float: left;
+  width: 50px;
+  height: 100%;
+  margin-left: 5px;
+}
+.lineapp_inlinelineview_wrapper .desk {
+  width: 50px;
+  height: 100%;
+  background: black;
+  float: left;
+}
+.lineapp_inlinelineview_wrapper .vip {
+  width: 50px;
+  height: 100%;
+  background: red;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+.lineapp_inlinelineview_wrapper .normal {
+  width: 50px;
+  height: 100%;
+  background: green;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+.lineapp_inlineview_wrapper {
+  height: 100%;
+  min-height: 100%;
+}
+.lineapp_inlineview_wrapper .config,
+.lineapp_inlineview_wrapper .line {
+  height: 50%;
+  min-height: 50%;
+}
+.lineapp_inlineview_wrapper .config {
+  background: "red";
+}
+.lineapp_inlineview_wrapper .line {
+  background: "green";
+}
+body {
+  height: 568px;
+}
+.lineapp_lineappview_wrapper {
+  height: 100%;
+  min-height: 100%;
+}

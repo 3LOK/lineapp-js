@@ -8,7 +8,10 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 
     var lineManagement = new lineapp.LineManagement();
 
-    var LINEID = "1";
+    var LINEID = "5629499534213120"; // No VIP, No Israeli
+    // var LINEID = "5707702298738688"; // VIP ($50), No Israeli
+    // var LINEID = "5668600916475904"; // VIP ($50), Israeli
+    
 
     self.open = function() {
         
@@ -59,7 +62,12 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
        */
 
       onEvents([
-          {type:"create", vipPrice:10000, israeliMode:false}
+          {type:"create", vipPrice:10000, israeliMode:false},
+          {type:"join", clientId:lineapp.Facebook.getUid(), timestamp:1391694080889},
+          {type:"join", clientId:1, timestamp:1391694080889},
+          {type:"join", clientId:2, timestamp:1391694080889},
+          {type:"join", clientId:3, timestamp:1391694080889},
+          {type:"join", clientId:4, timestamp:1391694080889}
       ]);
     }
 
@@ -94,7 +102,7 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
             // TODO: send it as an event
             _.defer(function() {
                 lineManagement.handleEvents([
-                    {type:"join", clientId:lineapp.Facebook.getUid()}
+                    {type:"join", clientId:lineapp.Facebook.getUid(), timestamp:1391694080889}
                 ])
 
                 onInLine();
@@ -104,7 +112,7 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 
     function onInLine() {
 
-        var presenter = new lineapp.InLinePresenter();
+        var presenter = new lineapp.InLinePresenter({lineManagement:lineManagement});
         view.showInLineView(presenter.getView());
     }
 

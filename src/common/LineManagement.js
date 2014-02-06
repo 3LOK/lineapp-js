@@ -49,7 +49,7 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
 
         // TODO: Check if user is already in line?
         
-        lines.NORMAL.push({id:event.clientId, ask:DEFAULT_PRICE});
+        lines.NORMAL.push({id:event.clientId, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp});
     }
 
     self.getLines = function() {

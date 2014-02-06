@@ -4,9 +4,18 @@ lineapp.InLineView = lineapp.InLineView || function(params) { return (function(p
 
     var self = new lineapp.EventHub();
 
-    var wrapper = $("<div></div>");
+    var wrapper = $("<div></div>", {"class":"lineapp_inlineview_wrapper"});
 
-    $("<div>In Line!</div>").appendTo(wrapper);
+    var config = $("<div></div>", {"class":"config"}).appendTo(wrapper);
+    var line = $("<div></div>", {"class":"line"}).appendTo(wrapper);
+
+    self.addConfigView = function(view) {
+        config.append(view.getDom());
+    };
+
+    self.addLineView = function(view) {
+        line.append(view.getDom());
+    };
 
     self.getDom = function() {
         return wrapper;
