@@ -1,14 +1,119 @@
 .lineapp_inlineconfigview_wrapper 
 {
-    .position 
-    {
+    width: 320px;
+    height: 240px;
+    overflow: hidden;
+    
+    #logoimg {
+	-webkit-transform: scale(0.5);
+	margin-top:-22px;
+	margin-left:-50px;
     }
+    #clock {
+    	-webkit-transform: scale(0.5);
+	margin-top:-47px;
+	margin-left:-26px;
+    }
+    #logo {
+	background-color: #5fae5d;
+	width: 320px;
+	height:60px;
+    }
+    #numbercontainer {
+	float: left;
+	background-color: #5fae5d;
+	border: solid 1px #448043;
+	width: 140px;
+	height: 180px;
+   }
+   #number {
+	background-color: #5fae5d;
+	width: 140px;
+	height: 140px;
+	margin-top: 5px;
+	text-align: center;
+	font-family: 'Duru Sans', sans-serif;
+	font-size: 114px;
+	color: #fff;
+   }
+   #placeInLineText {
+	background-color: #5fae5d;
+	width: 140px;
+	height: 38px;
+	margin-top: -14px;
+	text-align: center;
+	font-family: 'Duru Sans', sans-serif;
+	font-size: 9px;
+	color: #fff;
+   }
+   #rContainer {
+	float: left;
+	background-color: #5fae5d;
+	width: 178px;
+	height: 180px;
+   }
+   #eta {
+	background-color: #5fae5d;
+	border-top: solid 1px #448043;
+	border-bottom: solid 1px #448043;
+	float: left;
+	width: 178px;
+	height: 97px;
+   }
+   #etatime {
+	position:absolute;
+	font-family: arial;
+	color: #3e7e3d;
+	letter-spacing:-0.05em;
+	text-align: center;
+	top: 102px;
+	left: 173px;
+	width: 61px;
+	height: 37px;
+	overflow: hidden;
+   }
 
-    .timeinline
-    {
-    }
+   #etatext {
+	position:absolute;
+	font-family: 'Duru Sans', sans-serif;
+	font-size: 10px;
+	text-align: center;
+	color: #a7f5a4;
+	line-height: 15px;
+	top: 99px;
+	left: 255px;
+	width: 54px;
+	height: 57px;
+	overflow: hidden;
+   }
 
-    .timeeta
-    {
-    }
+   #price {
+	background-color: blue;
+	width: 178px;
+	height: 83px;
+   }
+   #cashboximg {
+	-webkit-transform: scale(0.5);
+	margin-top: -41px;
+	margin-left: -87px;
+   }
+   #cashbox select {
+	-webkit-appearance: none;
+	border:none;
+	background-color: transparent;
+	color: #3e7d3e;
+	font-family: arial;
+	font-weight: bold;
+	font-size: 29px;
+	margin-top: -3px;
+	margin-left: -1px;
+   }
+   #cashbox {
+	position: absolute;
+	text-align: center;
+	top: 200px;
+	left: 180px;
+	width: 38px;
+	height: 31px;
+   }
 }
