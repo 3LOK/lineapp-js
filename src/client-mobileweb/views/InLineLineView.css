@@ -7,8 +7,7 @@
 
     .waitingline
     {
-        position:relative;
-        top:20px;
+        margin-top:40px;
     }
     .waitingline,
     .vipline,
@@ -27,6 +26,20 @@
             position:absolute;
         }
 
+        .ask
+        {
+            font-family: Arial;
+            color: white;
+            font-weight: bold;
+            letter-spacing: -0.10em;
+            position: absolute;
+            width: 20px;
+            height: 15px;
+            text-align: center;
+            line-height: 15px;
+            background:#84c182;
+        }
+
         .info
         {
             background:url(bottom-info.png);
@@ -35,6 +48,32 @@
             height:31px;
             position:absolute;
             top:110px;
+
+            .timeinline
+            {
+                position: absolute;
+                left: 0px;
+                width: 45px;
+                height: 13px;
+                font-size: 10px;
+                top: 7px;
+                text-align: center;
+                line-height: 13px;
+                color: #357134;
+            }
+
+            .timeinlinetitle
+            {
+                position: absolute;
+                left: 0px;
+                width: 45px;
+                height: 13px;
+                font-size: 7px;
+                top: 18px;
+                text-align: center;
+                line-height: 13px;
+                color: #9bb49b;
+            }
         }
     }
 
@@ -74,6 +113,12 @@
             top: -16px;
             left: 15px;
         }
+
+        .ask
+        {
+            right: 22px;
+            top: -33px;
+        }
     }
     .creature2
     {
@@ -85,6 +130,12 @@
             top: 11px;
             left: 1px;
         }
+
+        .ask
+        {
+            right: 36px;
+            top: -6px;
+        }
     }
     .creature3
     {
@@ -95,6 +146,12 @@
         {
             top: -3px;
             left: 10px;
+        }
+
+        .ask
+        {
+            right: 27px;
+            top: -20px;
         }
     }
 }
