@@ -64,6 +64,8 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
             request:{
                 "type":"create_payment",
                 "paymentRequests":requests,
+                successUrl : view.getSuccessUrl(),
+                errorUrl : view.getErrorUrl()
             },
             callback:function(e) {
                 if (e.error) {
