@@ -24,58 +24,41 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         peopleDivs = {};
 
         _.each(lines.VIP, function(person) {
-            addVipPerson(person);
+            addPerson(person, vipLine);
         })
 
         _.each(lines.NORMAL, function(person) {
-            addNormalPerson(person);
+            addPerson(person, normalLine);
         })
 
     };
 
-    function addVipPerson(person) {
+    function addPerson(person, line) {
         lineWidth += CREATOR_WIDTH_AND_MARGIN;
         waitingLine.css({"width":lineWidth});
 
-        var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(vipLine);
+        var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(line);
         _.defer(function() {
-            var dom = $("<div></div>", {"class":"vip"})
+            var dom = $("<div></div>", {"class":"person"})
                 .css({left:spot.position().left+5})
                 .hide()
-                .appendTo(vipLine)
+                .appendTo(line)
                 .fadeIn({complete:nextAnimation});
 
             var face = $("<img />", {"class":"face"}).appendTo(dom);
             face.attr("src", "http://graph.facebook.com/"+person.id+"/picture?type=square");
 
-            var ask = $("<div></div>", {"class":"ask"}).html(person.ask).appendTo(dom);
+            var ask = $("<div></div>", {"class":"info"}).html(person.ask).appendTo(dom);
 
             dom.addClass("creature"+((person.id % 3) +1));
 
             peopleDivs[person.id] = {dom:dom, spot:spot, ask:ask};
-        });
-    }
 
-    function addNormalPerson(person) {
-        lineWidth += CREATOR_WIDTH_AND_MARGIN;
-        waitingLine.css({"width":lineWidth});
-
-        var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(normalLine);
-        _.defer(function() {
-            var dom = $("<div></div>", {"class":"normal"})
-                .css({left:spot.position().left+5})
-                .hide()
-                .appendTo(normalLine)
-                .fadeIn({complete:nextAnimation});
-
-            var face = $("<img />", {"class":"face"}).appendTo(dom);
-            face.attr("src", "http://graph.facebook.com/"+person.id+"/picture?type=square");
-
-            var ask = $("<div></div>", {"class":"ask"}).html(person.ask).appendTo(dom);
-
-            dom.addClass("creature"+((person.id % 3) +1));
-
-            peopleDivs[person.id] = {dom:dom, spot:spot, ask:ask};
+            if (person.id !== lineapp.Facebook.getUid()) {
+                dom.on("click", function() {
+                    self.fireEvent("swap", {partner:person.id});
+                });
+            }
         });
     }
 
@@ -92,6 +75,15 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         var amount = params.amount;
 
         peopleDivs[person.id].ask.html(amount);
+    };
+
+    self.onSwapEvent = function(params) {
+        var clientId = params.clientId;
+        var clientIds = params.clientIds;
+
+        _.each(clientIds, function(otherId) {
+            addAnimation({"type":"swap", params:{clientId1:clientId, clientId2:otherId}});
+        });
     };
 
     var animations = [];
@@ -126,6 +118,9 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
             case "set_price":
                 // Nothing to do, set price is not animated
             break;
+            case "swap":
+                onSwapEventInner(topAnimation.params);
+            break;
         }
 
     }
@@ -133,46 +128,62 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
     function onJoinEventInner(params) {
         var person = params.person;
         console.log(person);
-        addNormalPerson(person);
+        addPerson(person, normalLine);
     }
 
     function onLeaveEventInner(params) {
         var person = params.person;
 
-        peopleDivs[person.id].dom.fadeOut({
-            complete:function() {
-                peopleDivs[person.id].dom = null;
-                if (!peopleDivs[person.id].spot) {
-                    delete peopleDivs[person.id];
-                    lineWidth -= CREATOR_WIDTH_AND_MARGIN;
-                    waitingLine.css({"width":lineWidth});
-                    nextAnimation();
-                }
+        var startLeft = parseInt(peopleDivs[person.id].dom.css("left"));
+        console.log(startLeft);
+
+        var numAnimations = 0;
+
+        function onAnimationDone() {
+            numAnimations--;
+            if (numAnimations <= 0) {
+                peopleDivs[person.id].dom.remove();
+                peopleDivs[person.id].spot.remove();
+                delete peopleDivs[person.id];
+                lineWidth -= CREATOR_WIDTH_AND_MARGIN;
+                waitingLine.css({"width":lineWidth});
+                nextAnimation();
+            }
+        }
+
+        _.each(peopleDivs, function(personDiv) {
+            var left = parseInt(personDiv.dom.css("left"));
+
+            if (left > startLeft) {
+                numAnimations++;
+                personDiv.dom.animate({left:left-CREATOR_WIDTH_AND_MARGIN}, onAnimationDone)
             }
         });
-        peopleDivs[person.id].spot.fadeOut({
-            complete:function() {
-                peopleDivs[person.id].spot = null;
-                if (!peopleDivs[person.id].next) {
-                    delete peopleDivs[person.id];
-                    nextAnimation();
-                }
-            }
+
+        numAnimations++;
+        peopleDivs[person.id].dom.fadeOut({complete:onAnimationDone});
+        numAnimations++;
+        peopleDivs[person.id].spot.fadeOut({complete:onAnimationDone});
+    };
+
+    function onSwapEventInner(params) {
+        var clientId1 = params.clientId1;
+        var clientId2 = params.clientId2;
+
+        var dom1 = peopleDivs[clientId1.id].dom;
+        var dom2 = peopleDivs[clientId2.id].dom;
+
+        var completed = 0;
+
+        dom1.animate({left:dom2.css("left"), duration:1000}, function() {
+            completed++;
+            if (completed === 2) nextAnimation();
+        });
+        dom2.animate({left:dom1.css("left"), duration:1000}, function() {
+            completed++;
+            if (completed === 2) nextAnimation();
         });
     };
-
-    self.swap = function(params) {
-        var id1 = params.id1;
-        var id2 = params.id2;
-
-        var dom1 = peopleDivs[id1].dom;
-        var dom2 = peopleDivs[id2].dom;
-
-        dom1.animate({left:dom2.css("left"), duration:1000});
-        dom2.animate({left:dom1.css("left"), duration:1000});
-    };
-
-    XXXX = self.swap;
 
     self.getDom = function() {
         return wrapper;

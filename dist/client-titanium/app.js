@@ -47,5 +47,3 @@ var webview = Ti.UI.createWebView({url:"https://dl.dropboxusercontent.com/u/1936
 win.add(webview);
 
 win.open();
-
-alert("Hello World from titanium!");

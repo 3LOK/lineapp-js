@@ -28,8 +28,8 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
                 onLogin();
             });
 
-            // Login screen?
-            lineapp.Facebook.authorize();
+            var login = new lineapp.LoginPresenter();
+            view.showLogin(login.getView())
         }
     };
 

@@ -27,8 +27,11 @@
             position:absolute;
         }
 
-        .ask
+        .info
         {
+            background:url(bottom-info.png);
+            width:69px;
+            height:31px;
             position:absolute;
             top:103px;
         }
@@ -48,8 +51,7 @@
         float:left;
     }
 
-    .vip ,
-    .normal 
+    .person 
     {
         width:63px;
         height:109px;
@@ -58,6 +60,7 @@
         top:0px;
         left:0px;
         overflow:visible;
+        cursor:pointer;
     }
 
     .creature1

@@ -69,6 +69,7 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
             case "join":onJoinEvent(event); break;
             case "leave":onLeaveEvent(event); break;
             case "set_price":onSetPriceEvent(event); break;
+            case "swap":onSwapEvent(event); break;
             default:console.warn("Unkown event type", event);
         }
     }
@@ -77,7 +78,7 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
 
         // TODO: Check if user is already in line?
         
-        lines.NORMAL.push({id:event.clientId.id, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp});
+        lines.NORMAL.push({id:event.clientId.id, clientId:event.clientId, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp});
     }
 
     function onLeaveEvent(event) {
@@ -100,6 +101,33 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
             if (p.id === event.clientId.id) {
                 p.ask = event.price.amount;
             }
+        });
+    }
+
+    function onSwapEvent(event) {
+        var clientId = event.clientId;
+        var clientIds = event.clientIds;
+
+        _.each(clientIds, function(otherId) {
+
+            var clientPos;
+            var theirPos;
+
+            _.each(lines, function(line, lineId) {
+
+                _.each(line, function(person, index) {
+                    if (_.isEqual(person.clientId, clientId)) {
+                        clientPos = {lineId:lineId, pos:index};
+                    }
+                    if (_.isEqual(person.clientId, otherId)) {
+                        theirPos = {lineId:lineId, pos:index};
+                    }
+                });
+            });
+
+            var temp = lines[theirPos.lineId][theirPos.pos];
+            lines[theirPos.lineId][theirPos.pos] = lines[clientPos.lineId][clientPos.pos];
+            lines[clientPos.lineId][clientPos.pos] = temp;
         });
     }
 

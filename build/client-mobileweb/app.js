@@ -202,6 +202,7 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
             case "join":onJoinEvent(event); break;
             case "leave":onLeaveEvent(event); break;
             case "set_price":onSetPriceEvent(event); break;
+            case "swap":onSwapEvent(event); break;
             default:console.warn("Unkown event type", event);
         }
     }
@@ -210,7 +211,7 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
 
         // TODO: Check if user is already in line?
         
-        lines.NORMAL.push({id:event.clientId.id, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp});
+        lines.NORMAL.push({id:event.clientId.id, clientId:event.clientId, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp});
     }
 
     function onLeaveEvent(event) {
@@ -233,6 +234,33 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
             if (p.id === event.clientId.id) {
                 p.ask = event.price.amount;
             }
+        });
+    }
+
+    function onSwapEvent(event) {
+        var clientId = event.clientId;
+        var clientIds = event.clientIds;
+
+        _.each(clientIds, function(otherId) {
+
+            var clientPos;
+            var theirPos;
+
+            _.each(lines, function(line, lineId) {
+
+                _.each(line, function(person, index) {
+                    if (_.isEqual(person.clientId, clientId)) {
+                        clientPos = {lineId:lineId, pos:index};
+                    }
+                    if (_.isEqual(person.clientId, otherId)) {
+                        theirPos = {lineId:lineId, pos:index};
+                    }
+                });
+            });
+
+            var temp = lines[theirPos.lineId][theirPos.pos];
+            lines[theirPos.lineId][theirPos.pos] = lines[clientPos.lineId][clientPos.pos];
+            lines[clientPos.lineId][clientPos.pos] = temp;
         });
     }
 
@@ -607,14 +635,6 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
 
     var lineManagement = params.lineManagement;
 
-    /*
-    var me = _.chain(lineManagement.getLines()).flatten().find(function(position) {
-        return position.id === lineapp.Facebook.getUid();
-    }).value();
-
-    consonle.log(me);
-   */
-
     var config = new lineapp.InLineConfigPresenter({lineManagement:lineManagement});
     var line = new lineapp.InLineLinePresenter({lineManagement:lineManagement});
 
@@ -625,6 +645,49 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
 
     config.addEventListener("leave", function() {
         self.fireEvent("leave");
+    });
+
+    line.addEventListener("swap", function(e) {
+        var theirId = e.partner;
+
+        var myPos;
+        var theirPos;
+
+        var lines = lineManagement.getLines();
+
+        var clientIds = {};
+
+        _.each(lines, function(line, lineId) {
+            clientIds[lineId] = []
+
+            _.each(line, function(person, index) {
+
+                clientIds[lineId].push(person);
+
+                if (person.id === lineapp.Facebook.getUid()) {
+                    myPos = {lineId:lineId, pos:index};
+                }
+                if (person.id === theirId) {
+                    theirPos = {lineId:lineId, pos:index};
+                }
+            });
+        });
+
+        if (myPos.lineId !== theirPos.lineId) return; // Don't let swapping between lines (TODO: move to VIP?)
+        if (myPos.pos < theirPos.pos) return; // Don't swap back
+
+        var clientIds = _.pluck(clientIds[myPos.lineId], "clientId");
+
+        clientIds = _.first(clientIds, myPos.pos);
+
+        if (theirPos.pos > 0) clientIds = _.rest(clientIds, theirPos.pos);
+
+        clientIds.reverse();
+
+        lineManagement.performEvents([{type:"swap", 
+                                     clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}, 
+                                     clientIds:clientIds,
+                                     payKey:"TODO"}]);
     });
 
     self.close = function() {
@@ -710,19 +773,26 @@ lineapp.InLineLinePresenter = lineapp.InLineLinePresenter || function(params) { 
             console.log("Handling", event.type);
             switch (event.type) {
                 case "join":
-                    view.onJoinEvent({person:{id:event.clientId.id, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp}}); 
+                    view.onJoinEvent({person:{id:event.clientId.id, clientId:event.clientId, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp}}); 
                     break;
                 case "leave":
-                    view.onLeaveEvent({person:{id:event.clientId.id}}); 
+                    view.onLeaveEvent({person:{id:event.clientId.id, clientId:event.clientId}}); 
                     break;
                 case "set_price":
-                    view.onSetPriceEvent({person:{id:event.clientId.id}, amount:event.price.amount}); 
+                    view.onSetPriceEvent({person:{id:event.clientId.id, clientId:event.clientId}, amount:event.price.amount}); 
+                    break;
+                case "swap":
+                    view.onSwapEvent({clientId:event.clientId, clientIds:event.clientIds}); 
                     break;
             }
         });
     }
 
     lineManagement.addEventListener("changed", onChanged);
+
+    view.addEventListener("swap", function(e) {
+        self.fireEvent("swap", e);
+    });
 
     self.getView = function() {
         return view;
@@ -764,8 +834,8 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
                 onLogin();
             });
 
-            // Login screen?
-            lineapp.Facebook.authorize();
+            var login = new lineapp.LoginPresenter();
+            view.showLogin(login.getView())
         }
     };
 
@@ -885,11 +955,29 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 }(params))};
 var lineapp = lineapp || {};
 
+lineapp.LoginPresenter = lineapp.LoginPresenter || function(params) { return (function(params) {
+
+    var self = new lineapp.EventHub();
+
+    var view = new lineapp.LoginView();
+
+    view.addEventListener("login", function() {
+        lineapp.Facebook.authorize();
+    });
+
+    self.getView = function() {
+        return view;
+    };
+    
+	return self;
+}(params))};
+var lineapp = lineapp || {};
+
 lineapp.GetInLineView = lineapp.GetInLineView || function(params) { return (function(params) {
 
     var self = new lineapp.EventHub();
 
-    var wrapper = $("<div></div>");
+    var wrapper = $("<div></div>", {"class":"lineapp_getinlineview_wrapper"});
 
     var button = $("<button></button>")
                     .html("Get In Line!")
@@ -1025,58 +1113,41 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         peopleDivs = {};
 
         _.each(lines.VIP, function(person) {
-            addVipPerson(person);
+            addPerson(person, vipLine);
         })
 
         _.each(lines.NORMAL, function(person) {
-            addNormalPerson(person);
+            addPerson(person, normalLine);
         })
 
     };
 
-    function addVipPerson(person) {
+    function addPerson(person, line) {
         lineWidth += CREATOR_WIDTH_AND_MARGIN;
         waitingLine.css({"width":lineWidth});
 
-        var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(vipLine);
+        var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(line);
         _.defer(function() {
-            var dom = $("<div></div>", {"class":"vip"})
+            var dom = $("<div></div>", {"class":"person"})
                 .css({left:spot.position().left+5})
                 .hide()
-                .appendTo(vipLine)
+                .appendTo(line)
                 .fadeIn({complete:nextAnimation});
 
             var face = $("<img />", {"class":"face"}).appendTo(dom);
             face.attr("src", "http://graph.facebook.com/"+person.id+"/picture?type=square");
 
-            var ask = $("<div></div>", {"class":"ask"}).html(person.ask).appendTo(dom);
+            var ask = $("<div></div>", {"class":"info"}).html(person.ask).appendTo(dom);
 
             dom.addClass("creature"+((person.id % 3) +1));
 
             peopleDivs[person.id] = {dom:dom, spot:spot, ask:ask};
-        });
-    }
 
-    function addNormalPerson(person) {
-        lineWidth += CREATOR_WIDTH_AND_MARGIN;
-        waitingLine.css({"width":lineWidth});
-
-        var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(normalLine);
-        _.defer(function() {
-            var dom = $("<div></div>", {"class":"normal"})
-                .css({left:spot.position().left+5})
-                .hide()
-                .appendTo(normalLine)
-                .fadeIn({complete:nextAnimation});
-
-            var face = $("<img />", {"class":"face"}).appendTo(dom);
-            face.attr("src", "http://graph.facebook.com/"+person.id+"/picture?type=square");
-
-            var ask = $("<div></div>", {"class":"ask"}).html(person.ask).appendTo(dom);
-
-            dom.addClass("creature"+((person.id % 3) +1));
-
-            peopleDivs[person.id] = {dom:dom, spot:spot, ask:ask};
+            if (person.id !== lineapp.Facebook.getUid()) {
+                dom.on("click", function() {
+                    self.fireEvent("swap", {partner:person.id});
+                });
+            }
         });
     }
 
@@ -1093,6 +1164,15 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         var amount = params.amount;
 
         peopleDivs[person.id].ask.html(amount);
+    };
+
+    self.onSwapEvent = function(params) {
+        var clientId = params.clientId;
+        var clientIds = params.clientIds;
+
+        _.each(clientIds, function(otherId) {
+            addAnimation({"type":"swap", params:{clientId1:clientId, clientId2:otherId}});
+        });
     };
 
     var animations = [];
@@ -1127,6 +1207,9 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
             case "set_price":
                 // Nothing to do, set price is not animated
             break;
+            case "swap":
+                onSwapEventInner(topAnimation.params);
+            break;
         }
 
     }
@@ -1134,46 +1217,62 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
     function onJoinEventInner(params) {
         var person = params.person;
         console.log(person);
-        addNormalPerson(person);
+        addPerson(person, normalLine);
     }
 
     function onLeaveEventInner(params) {
         var person = params.person;
 
-        peopleDivs[person.id].dom.fadeOut({
-            complete:function() {
-                peopleDivs[person.id].dom = null;
-                if (!peopleDivs[person.id].spot) {
-                    delete peopleDivs[person.id];
-                    lineWidth -= CREATOR_WIDTH_AND_MARGIN;
-                    waitingLine.css({"width":lineWidth});
-                    nextAnimation();
-                }
+        var startLeft = parseInt(peopleDivs[person.id].dom.css("left"));
+        console.log(startLeft);
+
+        var numAnimations = 0;
+
+        function onAnimationDone() {
+            numAnimations--;
+            if (numAnimations <= 0) {
+                peopleDivs[person.id].dom.remove();
+                peopleDivs[person.id].spot.remove();
+                delete peopleDivs[person.id];
+                lineWidth -= CREATOR_WIDTH_AND_MARGIN;
+                waitingLine.css({"width":lineWidth});
+                nextAnimation();
+            }
+        }
+
+        _.each(peopleDivs, function(personDiv) {
+            var left = parseInt(personDiv.dom.css("left"));
+
+            if (left > startLeft) {
+                numAnimations++;
+                personDiv.dom.animate({left:left-CREATOR_WIDTH_AND_MARGIN}, onAnimationDone)
             }
         });
-        peopleDivs[person.id].spot.fadeOut({
-            complete:function() {
-                peopleDivs[person.id].spot = null;
-                if (!peopleDivs[person.id].next) {
-                    delete peopleDivs[person.id];
-                    nextAnimation();
-                }
-            }
+
+        numAnimations++;
+        peopleDivs[person.id].dom.fadeOut({complete:onAnimationDone});
+        numAnimations++;
+        peopleDivs[person.id].spot.fadeOut({complete:onAnimationDone});
+    };
+
+    function onSwapEventInner(params) {
+        var clientId1 = params.clientId1;
+        var clientId2 = params.clientId2;
+
+        var dom1 = peopleDivs[clientId1.id].dom;
+        var dom2 = peopleDivs[clientId2.id].dom;
+
+        var completed = 0;
+
+        dom1.animate({left:dom2.css("left"), duration:1000}, function() {
+            completed++;
+            if (completed === 2) nextAnimation();
+        });
+        dom2.animate({left:dom1.css("left"), duration:1000}, function() {
+            completed++;
+            if (completed === 2) nextAnimation();
         });
     };
-
-    self.swap = function(params) {
-        var id1 = params.id1;
-        var id2 = params.id2;
-
-        var dom1 = peopleDivs[id1].dom;
-        var dom2 = peopleDivs[id2].dom;
-
-        dom1.animate({left:dom2.css("left"), duration:1000});
-        dom2.animate({left:dom1.css("left"), duration:1000});
-    };
-
-    XXXX = self.swap;
 
     self.getDom = function() {
         return wrapper;
@@ -1253,6 +1352,27 @@ lineapp.LineAppView = lineapp.LineAppView || function(params) { return (function
 
 	return self;
 }(params))};
+var lineapp = lineapp || {};
+
+lineapp.LoginView = lineapp.LoginView || function(params) { return (function(params) {
+
+    var self = new lineapp.EventHub();
+
+    var wrapper = $("<div></div>", {"class":"lineapp_loginview_wrapper"});
+
+    var login = $("<button></button>").html("Login").appendTo(wrapper);
+
+    login.on("click", function() {
+        self.fireEvent("login");
+    });
+
+    self.getDom = function() {
+        return wrapper;
+    };
+    
+	return self;
+}(params))};
+
 if (typeof(console) === "undefined") {
     var console = {
     	log : function() {},

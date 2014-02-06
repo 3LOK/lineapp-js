@@ -6,14 +6,6 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
 
     var lineManagement = params.lineManagement;
 
-    /*
-    var me = _.chain(lineManagement.getLines()).flatten().find(function(position) {
-        return position.id === lineapp.Facebook.getUid();
-    }).value();
-
-    consonle.log(me);
-   */
-
     var config = new lineapp.InLineConfigPresenter({lineManagement:lineManagement});
     var line = new lineapp.InLineLinePresenter({lineManagement:lineManagement});
 
@@ -24,6 +16,49 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
 
     config.addEventListener("leave", function() {
         self.fireEvent("leave");
+    });
+
+    line.addEventListener("swap", function(e) {
+        var theirId = e.partner;
+
+        var myPos;
+        var theirPos;
+
+        var lines = lineManagement.getLines();
+
+        var clientIds = {};
+
+        _.each(lines, function(line, lineId) {
+            clientIds[lineId] = []
+
+            _.each(line, function(person, index) {
+
+                clientIds[lineId].push(person);
+
+                if (person.id === lineapp.Facebook.getUid()) {
+                    myPos = {lineId:lineId, pos:index};
+                }
+                if (person.id === theirId) {
+                    theirPos = {lineId:lineId, pos:index};
+                }
+            });
+        });
+
+        if (myPos.lineId !== theirPos.lineId) return; // Don't let swapping between lines (TODO: move to VIP?)
+        if (myPos.pos < theirPos.pos) return; // Don't swap back
+
+        var clientIds = _.pluck(clientIds[myPos.lineId], "clientId");
+
+        clientIds = _.first(clientIds, myPos.pos);
+
+        if (theirPos.pos > 0) clientIds = _.rest(clientIds, theirPos.pos);
+
+        clientIds.reverse();
+
+        lineManagement.performEvents([{type:"swap", 
+                                     clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}, 
+                                     clientIds:clientIds,
+                                     payKey:"TODO"}]);
     });
 
     self.close = function() {
@@ -109,19 +144,26 @@ lineapp.InLineLinePresenter = lineapp.InLineLinePresenter || function(params) { 
             console.log("Handling", event.type);
             switch (event.type) {
                 case "join":
-                    view.onJoinEvent({person:{id:event.clientId.id, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp}}); 
+                    view.onJoinEvent({person:{id:event.clientId.id, clientId:event.clientId, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp}}); 
                     break;
                 case "leave":
-                    view.onLeaveEvent({person:{id:event.clientId.id}}); 
+                    view.onLeaveEvent({person:{id:event.clientId.id, clientId:event.clientId}}); 
                     break;
                 case "set_price":
-                    view.onSetPriceEvent({person:{id:event.clientId.id}, amount:event.price.amount}); 
+                    view.onSetPriceEvent({person:{id:event.clientId.id, clientId:event.clientId}, amount:event.price.amount}); 
+                    break;
+                case "swap":
+                    view.onSwapEvent({clientId:event.clientId, clientIds:event.clientIds}); 
                     break;
             }
         });
     }
 
     lineManagement.addEventListener("changed", onChanged);
+
+    view.addEventListener("swap", function(e) {
+        self.fireEvent("swap", e);
+    });
 
     self.getView = function() {
         return view;

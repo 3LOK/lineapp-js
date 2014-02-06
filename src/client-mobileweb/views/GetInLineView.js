@@ -4,7 +4,7 @@ lineapp.GetInLineView = lineapp.GetInLineView || function(params) { return (func
 
     var self = new lineapp.EventHub();
 
-    var wrapper = $("<div></div>");
+    var wrapper = $("<div></div>", {"class":"lineapp_getinlineview_wrapper"});
 
     var button = $("<button></button>")
                     .html("Get In Line!")
