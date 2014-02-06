@@ -55,22 +55,31 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
 
         clientIds.reverse();
 
-        var prices = _.pluck(clientIds, "ask");
+        var requests = _.pluck(clientIds, "ask");
         var clientIds = _.pluck(clientIds, "clientId");
 
-        console.log(clientIds, prices);
+        view.showApprovePay();
 
-        /*
         lineapp.LineAppService.request({
             request:{
                 "type":"create_payment",
-                "paymentRequests":prices,
+                "paymentRequests":requests,
             },
             callback:function(e) {
-                console.log(e);
+                if (e.error) {
+                    alert(e.error.message);
+                    return;
+                }
+
+                var presenter = lineapp.InLineApprovePayPresenter({payKey:e.value.payKey, requests:requests});
+                view.fillApprovePay(presenter.getView());
+
+                /*
+                view.approvePayment({payKey:e.value.payKey, callback:function(response) {
+                }});
+               */
             }
         });
-       */
 
         /*
 

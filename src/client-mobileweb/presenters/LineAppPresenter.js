@@ -8,7 +8,7 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 
     var lineManagement = new lineapp.LineManagement();
 
-    var LINEID = "5629499534213120"; // No VIP, No Israeli
+    var LINEID = "5741031244955648"; // No VIP, No Israeli
     // var LINEID = "5707702298738688"; // VIP ($50), No Israeli
     // var LINEID = "5668600916475904"; // VIP ($50), Israeli
     

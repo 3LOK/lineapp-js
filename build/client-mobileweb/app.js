@@ -629,6 +629,24 @@ lineapp.GetInLinePresenter = lineapp.GetInLinePresenter || function(params) { re
 
 var lineapp = lineapp || {};
 
+lineapp.InLineApprovePayPresenter = lineapp.InLineApprovePayPresenter || function(params) { return (function(params) {
+
+    var payKey = params.payKey;
+    var requests = params.requests;
+
+    var self = new lineapp.EventHub();
+
+    var view = new lineapp.InLineApprovePayView({payKey:payKey, requests:requests});
+
+    self.getView = function() {
+        return view;
+    };
+    
+	return self;
+}(params))};
+
+var lineapp = lineapp || {};
+
 lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (function(params) {
 
     var self = new lineapp.EventHub();
@@ -684,22 +702,31 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
 
         clientIds.reverse();
 
-        var prices = _.pluck(clientIds, "ask");
+        var requests = _.pluck(clientIds, "ask");
         var clientIds = _.pluck(clientIds, "clientId");
 
-        console.log(clientIds, prices);
+        view.showApprovePay();
 
-        /*
         lineapp.LineAppService.request({
             request:{
                 "type":"create_payment",
-                "paymentRequests":prices,
+                "paymentRequests":requests,
             },
             callback:function(e) {
-                console.log(e);
+                if (e.error) {
+                    alert(e.error.message);
+                    return;
+                }
+
+                var presenter = lineapp.InLineApprovePayPresenter({payKey:e.value.payKey, requests:requests});
+                view.fillApprovePay(presenter.getView());
+
+                /*
+                view.approvePayment({payKey:e.value.payKey, callback:function(response) {
+                }});
+               */
             }
         });
-       */
 
         /*
 
@@ -834,7 +861,7 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 
     var lineManagement = new lineapp.LineManagement();
 
-    var LINEID = "5629499534213120"; // No VIP, No Israeli
+    var LINEID = "5741031244955648"; // No VIP, No Israeli
     // var LINEID = "5707702298738688"; // VIP ($50), No Israeli
     // var LINEID = "5668600916475904"; // VIP ($50), Israeli
     
@@ -1017,6 +1044,38 @@ lineapp.GetInLineView = lineapp.GetInLineView || function(params) { return (func
 
 var lineapp = lineapp || {};
 
+lineapp.InLineApprovePayView = lineapp.InLineApprovePayView || function(params) { return (function(params) {
+
+    var payKey = params.payKey;
+    var requests = params.requests;
+
+    var self = new lineapp.EventHub();
+
+    var wrapper = $("<div></div>", {"class":"lineapp_inlineapprovepayview_wrapper"});
+
+    var uniqueId = _.uniqueId();
+
+    $("<div class='header'></div>").appendTo(wrapper);
+    $("<div class='info'></div>").html("You are about to cut "+requests.length+" people in line for a miniscule sum of:").appendTo(wrapper);
+    $("<div class='amount'></div>").html("$"+(_.reduce(requests, function(memo, request){ return memo + request.amount; }, 0)/100)).appendTo(wrapper);
+    
+    wrapper.append($(
+        '<form id="form" action="https://www.sandbox.paypal.com/webapps/adaptivepayment/flow/pay" target="PPDGFrame" class="standard">' +
+        '<input type="submit" id="' + uniqueId + '">' +
+        '<input id="type" type="hidden" name="expType" value="mini">' +
+        '<input id="paykey" type="hidden" name="paykey" value="'+payKey+'">' +
+        '</form>'));
+
+    var embeddedPPFlow = new PAYPAL.apps.DGFlow({trigger:uniqueId});
+
+    self.getDom = function() {
+        return wrapper;
+    };
+    
+	return self;
+}(params))};
+var lineapp = lineapp || {};
+
 lineapp.InLineConfigView = lineapp.InLineConfigView || function(params) { return (function(params) {
 
     var self = new lineapp.EventHub();
@@ -1041,9 +1100,10 @@ lineapp.InLineConfigView = lineapp.InLineConfigView || function(params) { return
     $("<option></option>", {"value":300, "html":"$3"}).appendTo(ask);
     $("<option></option>", {"value":400, "html":"$4"}).appendTo(ask);
     $("<option></option>", {"value":500, "html":"$5"}).appendTo(ask);
-    $("<option></option>", {"value":1000, "html":"$10"}).appendTo(ask);
-    $("<option></option>", {"value":1500, "html":"$15"}).appendTo(ask);
-    $("<option></option>", {"value":2000, "html":"$20"}).appendTo(ask);
+    $("<option></option>", {"value":600, "html":"$6"}).appendTo(ask);
+    $("<option></option>", {"value":700, "html":"$7"}).appendTo(ask);
+    $("<option></option>", {"value":800, "html":"$8"}).appendTo(ask);
+    $("<option></option>", {"value":900, "html":"$9"}).appendTo(ask);
 
     ask.change(function() {
         self.fireEvent("setprice", {value:ask.val()});
@@ -1314,6 +1374,32 @@ lineapp.InLineView = lineapp.InLineView || function(params) { return (function(p
 
     var config = $("<div></div>", {"class":"config"}).appendTo(wrapper);
     var line = $("<div></div>", {"class":"line"}).appendTo(wrapper);
+    var approvePaymentMask = $("<div></div>", {"class":"approvepaymentmask"}).appendTo(wrapper);
+    var approvePayment = $("<div></div>", {"class":"approvepayment"}).appendTo(wrapper);
+
+    approvePayment.append($("<i class='icon-spin icon-spinner'></i>"))
+
+    self.showApprovePay = function() {
+        approvePaymentMask.show();
+        approvePayment.show();
+    };
+
+    self.fillApprovePay = function(view) {
+        approvePayment.empty();
+        approvePayment.append(view.getDom());
+    };
+
+    self.closeApprovePay = function() {
+        approvePayment.hide();
+        approvePaymentMask.hide();
+        approvePayment.empty();
+        approvePayment.append($("<i class='icon-spin icon-spinner'></i>"))
+    };
+
+    self.approvePayment = function(params) {
+        var payKey = params.payKey;
+        var callback = params.callback;
+    };
 
     self.addConfigView = function(view) {
         config.append(view.getDom());

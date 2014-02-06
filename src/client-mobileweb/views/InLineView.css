@@ -10,13 +10,32 @@
         min-height:50%;
     }
 
-    .config
+    .approvepaymentmask
     {
-        background:"red";
+        position:absolute;
+        top:0px; left:0; width:100%; height:100%;
+        background:rgba(0,0,0,0.3);
+        display:none;
     }
 
-    .line
+    .approvepayment
     {
-        background:"green";
+        display:none;
+        position:absolute;
+        left:50%;
+        top:50%;
+        margin-left: -127px;
+        margin-top: -117px;
+        width: 245px;
+        height: 225px;
+        background: #5fae5d;
+        text-align:center;
+
+        i
+        {
+            color:white;
+            font-size:36px;
+            margin-top:80px;
+        }
     }
 };
