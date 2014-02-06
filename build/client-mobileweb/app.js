@@ -141,9 +141,12 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
     var lines = {};
     var vipPrice = null;
     var israeliMode = false;
+    var lineId = null;
+    var lastTimestamp = null;
 
     self.init = function(params) {
         var events = params.events;
+        lineId = params.lineId;
         
         var first = events.shift();
 
@@ -163,17 +166,42 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
         _.each(events, handleEvent);
     };
 
-    self.handleEvents = function(events) {
+    self.performEvents = function(events) {
+        addRequest({events:events});
+    };
+
+    self.getLines = function() {
+        return lines;
+    };
+
+    var shouldUpdate = false;
+
+    self.startMonitoring = function() {
+
+        if (shouldUpdate) return;
+
+        shouldUpdate = true;
+        update();
+    };
+
+    self.stopMonitoring = function() {
+        shouldUpdate = false;
+    }
+
+    function handleEvents(events) {
 
         _.each(events, handleEvent);
 
         self.fireEvent("changed", {events:events});
-
     };
 
     function handleEvent(event) {
+        lastTimestamp = event.timestamp;
+
         switch (event.type) {
             case "join":onJoinEvent(event); break;
+            case "leave":onLeaveEvent(event); break;
+            case "set_price":onSetPriceEvent(event); break;
             default:console.warn("Unkown event type", event);
         }
     }
@@ -182,12 +210,90 @@ lineapp.LineManagement = lineapp.LineManagement || function(params) { return (fu
 
         // TODO: Check if user is already in line?
         
-        lines.NORMAL.push({id:event.clientId, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp});
+        lines.NORMAL.push({id:event.clientId.id, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp});
     }
 
-    self.getLines = function() {
-        return lines;
-    };
+    function onLeaveEvent(event) {
+        lines.NORMAL = _.reject(lines.NORMAL, function(p) {
+            return (p.id === event.clientId.id);
+        });
+        lines.VIP = _.reject(lines.VIP, function(p) {
+            return (p.id === event.clientId.id);
+        });
+    }
+
+    function onSetPriceEvent(event) {
+        _.each(lines.NORMAL, function(p) {
+            if (p.id === event.clientId.id) {
+                p.ask = event.price.amount;
+            }
+        });
+
+        _.each(lines.VIP, function(p) {
+            if (p.id === event.clientId.id) {
+                p.ask = event.price.amount;
+            }
+        });
+    }
+
+    function update() {
+        if (!shouldUpdate) return;
+
+        addRequest({}, function() {
+            setTimeout(update, 5000);
+        });
+    }
+
+
+    var requests = [];
+    var inRequestHandling = false;
+    function addRequest(request, callback) {
+
+        requests.push({request:request, callback:callback});
+
+        if (!inRequestHandling) {
+            nextRequest();
+        }
+    }
+
+    function nextRequest() {
+
+        if (requests.length === 0) {
+            inRequestHandling = false;
+            return;
+        }
+
+        inRequestHandling = true;
+
+        var topRequest = requests.shift();
+
+        var request = {
+            type:"update",
+            lineId:lineId,
+            after:lastTimestamp,
+            accessToken:lineapp.Facebook.getAccessToken()
+        };
+
+        request = _.extend(request, topRequest.request);
+
+        lineapp.LineAppService.request({
+            request:request,
+            callback:function(response) {
+
+                try {
+                    if (response.error) {
+                        alert(response.error.message);
+                    } else {
+                        handleEvents(response.value.events || []);
+                    }
+                } catch(e) {}
+
+                if (topRequest.callback) topRequest.callback();
+
+                nextRequest();
+            }
+        });
+    }
 
 	return self;
 }(params))};
@@ -517,6 +623,15 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
     view.addConfigView(config.getView());
     view.addLineView(line.getView());
 
+    config.addEventListener("leave", function() {
+        self.fireEvent("leave");
+    });
+
+    self.close = function() {
+        config.close();
+        line.close();
+    }
+
     self.getView = function() {
         return view;
     };
@@ -556,6 +671,20 @@ lineapp.InLineConfigPresenter = lineapp.InLineConfigPresenter || function(params
 
     self.update();
 
+    view.addEventListener("leave", function() {
+        self.fireEvent("leave");
+    });
+
+    view.addEventListener("setprice", function(e) {
+        lineManagement.performEvents([{type:"set_price", 
+                                     price:{destination:"yoavamit@yahoo.com", currency:"USD", amount:e.value}, 
+                                     clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}}]);
+    });
+
+    self.close = function() {
+        view.close();
+    };
+
     self.getView = function() {
         return view;
     };
@@ -565,6 +694,8 @@ lineapp.InLineConfigPresenter = lineapp.InLineConfigPresenter || function(params
 
 lineapp.InLineLinePresenter = lineapp.InLineLinePresenter || function(params) { return (function(params) {
 
+    var DEFAULT_PRICE = 500;
+
     var self = new lineapp.EventHub();
 
     var lineManagement = params.lineManagement;
@@ -573,8 +704,32 @@ lineapp.InLineLinePresenter = lineapp.InLineLinePresenter || function(params) { 
 
     view.initLines(lineManagement.getLines());
 
+    var onChanged = function(e) {
+        var events = e.events;
+        _.each(events, function(event) {
+            console.log("Handling", event.type);
+            switch (event.type) {
+                case "join":
+                    view.onJoinEvent({person:{id:event.clientId.id, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp}}); 
+                    break;
+                case "leave":
+                    view.onLeaveEvent({person:{id:event.clientId.id}}); 
+                    break;
+                case "set_price":
+                    view.onSetPriceEvent({person:{id:event.clientId.id}, amount:event.price.amount}); 
+                    break;
+            }
+        });
+    }
+
+    lineManagement.addEventListener("changed", onChanged);
+
     self.getView = function() {
         return view;
+    };
+
+    self.close = function() {
+        lineManagement.removeEventListener("changed", onChanged);
     };
     
 	return self;
@@ -589,7 +744,10 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 
     var lineManagement = new lineapp.LineManagement();
 
-    var LINEID = "1";
+    var LINEID = "5629499534213120"; // No VIP, No Israeli
+    // var LINEID = "5707702298738688"; // VIP ($50), No Israeli
+    // var LINEID = "5668600916475904"; // VIP ($50), Israeli
+    
 
     self.open = function() {
         
@@ -621,11 +779,10 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 
         console.log("onLogin >> Start.");
 
-        /* TODO
         // Get line events
         lineapp.LineAppService.request({
             request:{
-                type:"get_events",
+                type:"update",
                 lineId:LINEID
             },
             callback:function(response) {
@@ -634,19 +791,14 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
                     alert(response.error.message);
                 }
 
-               onEvents(response.events);
+                onEvents(response.value.events || []);
             }
         });
-       */
+    }
 
-      onEvents([
-          {type:"create", vipPrice:10000, israeliMode:false},
-          {type:"join", clientId:lineapp.Facebook.getUid(), timestamp:1391694080889},
-          {type:"join", clientId:1, timestamp:1391694080889},
-          {type:"join", clientId:2, timestamp:1391694080889},
-          {type:"join", clientId:3, timestamp:1391694080889},
-          {type:"join", clientId:4, timestamp:1391694080889}
-      ]);
+    function amIInLine() {
+        var lines = _.values(lineManagement.getLines());
+        return _.chain(lines).flatten().pluck("id").contains(lineapp.Facebook.getUid()).value();
     }
 
     function onEvents(events) {
@@ -654,11 +806,11 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
         console.log("onEvents >> Start.", events);
 
         // Build line management
-        lineManagement.init({events:events});
+        lineManagement.init({events:events, lineId:LINEID});
+        lineManagement.startMonitoring();
 
         // See if we're in line.
-        var lines = _.values(lineManagement.getLines());
-        var inLine = _.chain(lines).flatten().pluck("id").contains(lineapp.Facebook.getUid()).value();
+        var inLine = amIInLine();
 
         console.log("onEvents >> inLine", inLine);
 
@@ -677,21 +829,52 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 
         // Listen to join line request
         presenter.addEventListener("lineup", function() {
-            // TODO: send it as an event
-            _.defer(function() {
-                lineManagement.handleEvents([
-                    {type:"join", clientId:lineapp.Facebook.getUid(), timestamp:1391694080889}
-                ])
 
-                onInLine();
-            });
+            view.showWaiting();
+
+            lineManagement.performEvents([
+                {type:"join", clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}} // TODO: friendClientId
+            ]);
         });
+
+        var checkChanged = function() {
+            console.log("onNotInLine >> Checking if inline");
+            if (amIInLine()) {
+                lineManagement.removeEventListener("changed", checkChanged);
+                onInLine();
+            }
+        };
+
+        lineManagement.addEventListener("changed", checkChanged);
+        view.hideWaiting();
     }
 
     function onInLine() {
+        console.log("onInLine >> Start");
 
         var presenter = new lineapp.InLinePresenter({lineManagement:lineManagement});
         view.showInLineView(presenter.getView());
+
+        // Listen to join line request
+        presenter.addEventListener("leave", function() {
+
+            view.showWaiting();
+
+            lineManagement.performEvents([{type:"leave", clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}}]);
+        });
+
+        var checkChanged = function() {
+            console.log("onNotInLine >> Checking if not inline");
+            if (!amIInLine()) {
+                lineManagement.removeEventListener("changed", checkChanged);
+                presenter.close();
+                onNotInLine();
+            }
+        };
+
+        lineManagement.addEventListener("changed", checkChanged);
+
+        view.hideWaiting();
     }
 
     self.getView = function() {
@@ -739,6 +922,11 @@ lineapp.InLineConfigView = lineapp.InLineConfigView || function(params) { return
     var timeEta = $("<div></div>", {"class":"timeeta"}).appendTo(wrapper);
     var ask = $("<select></select>").appendTo(wrapper);
     var totalEarned = $("<div></div>").appendTo(wrapper);
+    var leave = $("<button></button>").html("Leave").appendTo(wrapper);
+
+    leave.on("click", function() {
+        self.fireEvent("leave");
+    });
 
     $("<option></option>", {"value":100, "html":"$1"}).appendTo(ask);
     $("<option></option>", {"value":200, "html":"$2"}).appendTo(ask);
@@ -748,6 +936,34 @@ lineapp.InLineConfigView = lineapp.InLineConfigView || function(params) { return
     $("<option></option>", {"value":1000, "html":"$10"}).appendTo(ask);
     $("<option></option>", {"value":1500, "html":"$15"}).appendTo(ask);
     $("<option></option>", {"value":2000, "html":"$20"}).appendTo(ask);
+
+    ask.change(function() {
+        self.fireEvent("setprice", {value:ask.val()});
+    });
+
+    function updateTimeInLine() {
+        if (!joinTimestamp) return;
+
+        var diff = new Date().getTime() - joinTimestamp;
+
+        var seconds = parseInt(diff/1000);
+
+        var hours = parseInt(seconds/60/60);
+        var minutes = parseInt(seconds/60) - hours*60;
+        seconds = seconds - minutes*60 - hours*60*60;
+
+        timeInLine.html(pad(hours)+":"+pad(minutes)+":"+pad(seconds));
+    };
+
+    function pad(num) {
+        var str = ""+num;
+
+        if (str.length === 1) str = "0"+str;
+
+        return str;
+    }
+
+    var internalId = setInterval(updateTimeInLine, 1000);
 
     self.setPosition = function(val) {
         pos.html(val);
@@ -774,29 +990,10 @@ lineapp.InLineConfigView = lineapp.InLineConfigView || function(params) { return
         return wrapper;
     };
 
-    function updateTimeInLine() {
-        if (!joinTimestamp) return;
-
-        var diff = new Date().getTime() - joinTimestamp;
-
-        var seconds = parseInt(diff/1000);
-
-        var hours = parseInt(seconds/60/60);
-        var minutes = parseInt(seconds/60) - hours*60;
-        seconds = seconds - minutes*60 - hours*60*60;
-
-        timeInLine.html(pad(hours)+":"+pad(minutes)+":"+pad(seconds));
+    self.close = function() {
+        clearInterval(internalId);
+        intervalId = null;
     };
-
-    function pad(num) {
-        var str = ""+num;
-
-        if (str.length === 1) str = "0"+str;
-
-        return str;
-    }
-
-    setInterval(updateTimeInLine, 1000);
     
 	return self;
 }(params))};
@@ -818,12 +1015,12 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
     var vipLine = $("<div></div>", {"class":"vipline"}).appendTo(waitingLine);
     var normalLine = $("<div></div>", {"class":"normalline"}).appendTo(waitingLine);
 
+    var lineWidth = 55;
+
     self.initLines = function(lines) {
         vipLine.empty();
         normalLine.empty();
         peopleDivs = {};
-
-        waitingLine.css({"width":55+55*(lines.VIP.length+lines.NORMAL.length)});
 
         _.each(lines.VIP, function(person) {
             addVipPerson(person);
@@ -836,32 +1033,124 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
     };
 
     function addVipPerson(person) {
+        lineWidth += 55;
+        waitingLine.css({"width":lineWidth});
+
         var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(vipLine);
         _.defer(function() {
             var dom = $("<div></div>", {"class":"vip"})
                 .css({left:spot.position().left+5})
-                .appendTo(vipLine);
-            peopleDivs[person.id] = dom;
+                .hide()
+                .appendTo(vipLine)
+                .fadeIn({complete:nextAnimation});
+            peopleDivs[person.id] = {dom:dom, spot:spot};
         });
     }
 
     function addNormalPerson(person) {
-        var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(normalLine);
+        lineWidth += 55;
+        waitingLine.css({"width":lineWidth});
 
+        var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(normalLine);
         _.defer(function() {
             var dom = $("<div></div>", {"class":"normal"})
+                .html(person.ask)
                 .css({left:spot.position().left+5})
-                .appendTo(normalLine);
-            peopleDivs[person.id] = dom;
+                .hide()
+                .appendTo(normalLine)
+                .fadeIn({complete:nextAnimation});
+            peopleDivs[person.id] = {dom:dom, spot:spot};
         });
     }
+
+    self.onJoinEvent = function(params) {
+        addAnimation({type:"join", params:params})
+    };
+
+    self.onLeaveEvent = function(params) {
+        addAnimation({type:"leave", params:params})
+    };
+
+    self.onSetPriceEvent = function(params) {
+        var person = params.person;
+        var amount = params.amount;
+
+        peopleDivs[person.id].dom.html(amount);
+    };
+
+    var animations = [];
+    var inAnimations = false;
+
+    function addAnimation(params) {
+        animations.push(params);
+        if (!inAnimations) {
+            nextAnimation();
+        }
+    }
+
+    function nextAnimation() {
+        if (animations.length === 0) {
+            inAnimations = false;
+            return;
+        }
+
+        inAnimations = true;
+
+        var topAnimation = animations.shift();
+
+        console.log("Animating", topAnimation.type);
+
+        switch(topAnimation.type) {
+            case "join":
+                onJoinEventInner(topAnimation.params);
+            break;
+            case "leave":
+                onLeaveEventInner(topAnimation.params);
+            break;
+            case "set_price":
+                // Nothing to do, set price is not animated
+            break;
+        }
+
+    }
+
+    function onJoinEventInner(params) {
+        var person = params.person;
+        console.log(person);
+        addNormalPerson(person);
+    }
+
+    function onLeaveEventInner(params) {
+        var person = params.person;
+
+        peopleDivs[person.id].dom.fadeOut({
+            complete:function() {
+                peopleDivs[person.id].dom = null;
+                if (!peopleDivs[person.id].spot) {
+                    delete peopleDivs[person.id];
+                    lineWidth -= 55;
+                    waitingLine.css({"width":lineWidth});
+                    nextAnimation();
+                }
+            }
+        });
+        peopleDivs[person.id].spot.fadeOut({
+            complete:function() {
+                peopleDivs[person.id].spot = null;
+                if (!peopleDivs[person.id].next) {
+                    delete peopleDivs[person.id];
+                    nextAnimation();
+                }
+            }
+        });
+    };
 
     self.swap = function(params) {
         var id1 = params.id1;
         var id2 = params.id2;
 
-        var dom1 = peopleDivs[id1];
-        var dom2 = peopleDivs[id2];
+        var dom1 = peopleDivs[id1].dom;
+        var dom2 = peopleDivs[id2].dom;
 
         dom1.animate({left:dom2.css("left"), duration:1000});
         dom2.animate({left:dom1.css("left"), duration:1000});
@@ -911,26 +1200,33 @@ lineapp.LineAppView = lineapp.LineAppView || function(params) { return (function
 
     var wrapper = $("<div></div>", {"class":"lineapp_lineappview_wrapper"});
 
+    var waiting = $("<div></div>", {"class":"waiting"}).appendTo(wrapper);
+    $("<i class='icon-spin icon-spinner'></i>").appendTo(waiting);
+    waiting.hide();
+
     self.showWaiting = function() {
-        // TODO;
+        waiting.show();
     };
 
     self.hideWaiting = function() {
-        // TODO;
+        waiting.hide();
     };
 
     self.showLogin = function(view) {
         wrapper.empty();
+        wrapper.append(waiting);
         wrapper.append(view.getDom());
     };
 
     self.showGetInLineView = function(view) {
         wrapper.empty();
+        wrapper.append(waiting);
         wrapper.append(view.getDom());
     };
 
     self.showInLineView = function(view) {
         wrapper.empty();
+        wrapper.append(waiting);
         wrapper.append(view.getDom());
     };
 

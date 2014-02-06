@@ -5,26 +5,33 @@ lineapp.LineAppView = lineapp.LineAppView || function(params) { return (function
 
     var wrapper = $("<div></div>", {"class":"lineapp_lineappview_wrapper"});
 
+    var waiting = $("<div></div>", {"class":"waiting"}).appendTo(wrapper);
+    $("<i class='icon-spin icon-spinner'></i>").appendTo(waiting);
+    waiting.hide();
+
     self.showWaiting = function() {
-        // TODO;
+        waiting.show();
     };
 
     self.hideWaiting = function() {
-        // TODO;
+        waiting.hide();
     };
 
     self.showLogin = function(view) {
         wrapper.empty();
+        wrapper.append(waiting);
         wrapper.append(view.getDom());
     };
 
     self.showGetInLineView = function(view) {
         wrapper.empty();
+        wrapper.append(waiting);
         wrapper.append(view.getDom());
     };
 
     self.showInLineView = function(view) {
         wrapper.empty();
+        wrapper.append(waiting);
         wrapper.append(view.getDom());
     };
 

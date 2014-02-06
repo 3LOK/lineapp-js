@@ -22,6 +22,15 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
     view.addConfigView(config.getView());
     view.addLineView(line.getView());
 
+    config.addEventListener("leave", function() {
+        self.fireEvent("leave");
+    });
+
+    self.close = function() {
+        config.close();
+        line.close();
+    }
+
     self.getView = function() {
         return view;
     };
@@ -61,6 +70,20 @@ lineapp.InLineConfigPresenter = lineapp.InLineConfigPresenter || function(params
 
     self.update();
 
+    view.addEventListener("leave", function() {
+        self.fireEvent("leave");
+    });
+
+    view.addEventListener("setprice", function(e) {
+        lineManagement.performEvents([{type:"set_price", 
+                                     price:{destination:"yoavamit@yahoo.com", currency:"USD", amount:e.value}, 
+                                     clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}}]);
+    });
+
+    self.close = function() {
+        view.close();
+    };
+
     self.getView = function() {
         return view;
     };
@@ -70,6 +93,8 @@ lineapp.InLineConfigPresenter = lineapp.InLineConfigPresenter || function(params
 
 lineapp.InLineLinePresenter = lineapp.InLineLinePresenter || function(params) { return (function(params) {
 
+    var DEFAULT_PRICE = 500;
+
     var self = new lineapp.EventHub();
 
     var lineManagement = params.lineManagement;
@@ -78,8 +103,32 @@ lineapp.InLineLinePresenter = lineapp.InLineLinePresenter || function(params) { 
 
     view.initLines(lineManagement.getLines());
 
+    var onChanged = function(e) {
+        var events = e.events;
+        _.each(events, function(event) {
+            console.log("Handling", event.type);
+            switch (event.type) {
+                case "join":
+                    view.onJoinEvent({person:{id:event.clientId.id, ask:DEFAULT_PRICE, joinTimestamp:event.timestamp}}); 
+                    break;
+                case "leave":
+                    view.onLeaveEvent({person:{id:event.clientId.id}}); 
+                    break;
+                case "set_price":
+                    view.onSetPriceEvent({person:{id:event.clientId.id}, amount:event.price.amount}); 
+                    break;
+            }
+        });
+    }
+
+    lineManagement.addEventListener("changed", onChanged);
+
     self.getView = function() {
         return view;
+    };
+
+    self.close = function() {
+        lineManagement.removeEventListener("changed", onChanged);
     };
     
 	return self;

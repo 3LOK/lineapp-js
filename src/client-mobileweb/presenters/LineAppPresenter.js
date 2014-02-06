@@ -43,11 +43,10 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 
         console.log("onLogin >> Start.");
 
-        /* TODO
         // Get line events
         lineapp.LineAppService.request({
             request:{
-                type:"get_events",
+                type:"update",
                 lineId:LINEID
             },
             callback:function(response) {
@@ -56,19 +55,14 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
                     alert(response.error.message);
                 }
 
-               onEvents(response.events);
+                onEvents(response.value.events || []);
             }
         });
-       */
+    }
 
-      onEvents([
-          {type:"create", vipPrice:10000, israeliMode:false},
-          {type:"join", clientId:lineapp.Facebook.getUid(), timestamp:1391694080889},
-          {type:"join", clientId:1, timestamp:1391694080889},
-          {type:"join", clientId:2, timestamp:1391694080889},
-          {type:"join", clientId:3, timestamp:1391694080889},
-          {type:"join", clientId:4, timestamp:1391694080889}
-      ]);
+    function amIInLine() {
+        var lines = _.values(lineManagement.getLines());
+        return _.chain(lines).flatten().pluck("id").contains(lineapp.Facebook.getUid()).value();
     }
 
     function onEvents(events) {
@@ -76,11 +70,11 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
         console.log("onEvents >> Start.", events);
 
         // Build line management
-        lineManagement.init({events:events});
+        lineManagement.init({events:events, lineId:LINEID});
+        lineManagement.startMonitoring();
 
         // See if we're in line.
-        var lines = _.values(lineManagement.getLines());
-        var inLine = _.chain(lines).flatten().pluck("id").contains(lineapp.Facebook.getUid()).value();
+        var inLine = amIInLine();
 
         console.log("onEvents >> inLine", inLine);
 
@@ -99,21 +93,52 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
 
         // Listen to join line request
         presenter.addEventListener("lineup", function() {
-            // TODO: send it as an event
-            _.defer(function() {
-                lineManagement.handleEvents([
-                    {type:"join", clientId:lineapp.Facebook.getUid(), timestamp:1391694080889}
-                ])
 
-                onInLine();
-            });
+            view.showWaiting();
+
+            lineManagement.performEvents([
+                {type:"join", clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}} // TODO: friendClientId
+            ]);
         });
+
+        var checkChanged = function() {
+            console.log("onNotInLine >> Checking if inline");
+            if (amIInLine()) {
+                lineManagement.removeEventListener("changed", checkChanged);
+                onInLine();
+            }
+        };
+
+        lineManagement.addEventListener("changed", checkChanged);
+        view.hideWaiting();
     }
 
     function onInLine() {
+        console.log("onInLine >> Start");
 
         var presenter = new lineapp.InLinePresenter({lineManagement:lineManagement});
         view.showInLineView(presenter.getView());
+
+        // Listen to join line request
+        presenter.addEventListener("leave", function() {
+
+            view.showWaiting();
+
+            lineManagement.performEvents([{type:"leave", clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}}]);
+        });
+
+        var checkChanged = function() {
+            console.log("onNotInLine >> Checking if not inline");
+            if (!amIInLine()) {
+                lineManagement.removeEventListener("changed", checkChanged);
+                presenter.close();
+                onNotInLine();
+            }
+        };
+
+        lineManagement.addEventListener("changed", checkChanged);
+
+        view.hideWaiting();
     }
 
     self.getView = function() {

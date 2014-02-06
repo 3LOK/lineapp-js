@@ -83,3 +83,20 @@ body {
   height: 100%;
   min-height: 100%;
 }
+.lineapp_lineappview_wrapper .waiting {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 100;
+  color: white;
+  font-size: 36px;
+  text-align: center;
+}
+.lineapp_lineappview_wrapper .waiting i {
+  position: relative;
+  top: 50%;
+  margin-top: -36px;
+}
