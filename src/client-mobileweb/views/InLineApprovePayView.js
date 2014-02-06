@@ -1,12 +1,12 @@
 var lineapp = lineapp || {};
 
 lineapp.InLineApprovePayView = lineapp.InLineApprovePayView || function(params) { return (function(params) {
-
-    var payKey = params.payKey;
+	params = params || {};
+    var payKey = params.payKey || null;
     var requests = params.requests;
 
     var self = new lineapp.EventHub();
-
+    
     var wrapper = $("<div></div>", {"class":"lineapp_inlineapprovepayview_wrapper"});
 
     var uniqueId = _.uniqueId();
@@ -16,7 +16,7 @@ lineapp.InLineApprovePayView = lineapp.InLineApprovePayView || function(params) 
     $("<div class='amount'></div>").html("$"+(_.reduce(requests, function(memo, request){ return memo + request.amount; }, 0)/100)).appendTo(wrapper);
     
     wrapper.append($(
-        '<form id="form" action="https://www.sandbox.paypal.com/webapps/adaptivepayment/flow/pay" target="PPDGFrame" class="standard">' +
+        '<form id="form" action="https://www.sandbox.paypal.com/webapps/adaptivepayment/flow/pay" class="standard">' +
         '<input type="submit" id="' + uniqueId + '">' +
         '<input id="type" type="hidden" name="expType" value="mini">' +
         '<input id="paykey" type="hidden" name="paykey" value="'+payKey+'">' +
