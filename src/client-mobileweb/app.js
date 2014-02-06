@@ -8,9 +8,7 @@ if (typeof(console) === "undefined") {
 // Note: 'organizationFull' var is initialized externally
 var localurl = window.location.protocol + "//"+window.location.host;
 
-var client = new lineapp.Client({
-	apiUrl : "http://";
-});
+var client = new lineapp.Client();
 
 function init(params) {
 
