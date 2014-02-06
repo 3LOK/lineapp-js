@@ -1,0 +1,23 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, clean, sans-serif !important;
+  direction: rtl;
+  font-size: 12px;
+}
+.direction {
+  direction: rtl;
+}
+.floatstart {
+  float: right;
+}
+.floatend {
+  float: left;
+}
+.alignstart {
+  text-align: right;
+}
+.alignend {
+  text-align: left;
+}
