@@ -40,11 +40,7 @@ lineapp.WallAppPresenter = lineapp.WallAppPresenter || function(params) { return
     };
     
     view.addEventListener("join", function(e) {
-    	if (typeof(Ti) !== "undefined") {
-	    	Ti.App.fireEvent("print_slip", {
-	    		id : "174"
-	    	});
-    	}
+    	window.location.href = "lineapp://print_slip/" + 417;
     });
 
     function onEvents(events) {
