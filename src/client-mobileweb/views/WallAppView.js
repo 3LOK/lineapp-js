@@ -9,6 +9,14 @@ lineapp.WallAppView = lineapp.WallAppView || function(params) { return (function
 		return wrapperDiv;
 	};
 	
+	var names = {
+		"100001715134794" : "Donald",
+		"605719079" : "Danny",
+		"100000020578085" : "Adi",
+		"705941934" : "Yair",
+		"709137690" : "Yoav"
+	};
+	https://graph.facebook.com//picture
 	self.reset = function(lineManagement) {
 		wrapperDiv.empty();
 		
@@ -28,10 +36,19 @@ lineapp.WallAppView = lineapp.WallAppView || function(params) { return (function
 			var imageDiv = $("<img src=\"" + imageUrl + "\" class=\"profile\"></img>");
 			personDiv.append(imageDiv);
 			
-			var name = "kdgjjfdkhgfd";
+			var name = names[person.clientId.id];
 			var nameDiv = $("<div class=\"name\"></div>");
 			nameDiv.text(name);
 			personDiv.append(nameDiv);
+		});
+		
+		var joinWrapper = $("<div class=\"joinwrapper\"></div>")
+		wrapperDiv.append(joinWrapper);
+		
+		var joinButton = $("<div class=\"joinbutton\">GET IN LINE!</div>");
+		joinWrapper.append(joinButton);
+		joinButton.click(function() {
+			self.fireEvent("join", {});
 		});
 	};
 

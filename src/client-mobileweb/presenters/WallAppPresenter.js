@@ -38,6 +38,10 @@ lineapp.WallAppPresenter = lineapp.WallAppPresenter || function(params) { return
             }
         });
     };
+    
+    view.addEventListener("join", function(e) {
+    	console.log("JOIN PRESSED!");
+    });
 
     function onEvents(events) {
 
@@ -46,6 +50,7 @@ lineapp.WallAppPresenter = lineapp.WallAppPresenter || function(params) { return
         // Build line management
         lineManagement.init({events:events, lineId:LINEID});
         lineManagement.startMonitoring();
+       	view.reset(lineManagement);
         
         lineManagement.addEventListener("changed", function() {
         	view.reset(lineManagement);

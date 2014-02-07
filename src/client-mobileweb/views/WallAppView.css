@@ -1,0 +1,86 @@
+body
+{
+    height:1024px;
+}
+
+
+.person
+{
+	position:relative;
+    width:100%;
+    height:128px;
+    min-height:100%;
+    background:white;
+
+    .position
+    {
+        position:absolute;
+    	font-size:90px;
+        top:19px;
+        left:70px;
+    }
+    
+    .profile
+    {
+        position:absolute;
+    	width:65px;
+        top:35px;
+        left:215px;
+    }
+    
+    .name
+    {
+        position:absolute;
+    	font-size:45px;
+        top:40px;
+        left:370px;
+    }
+}
+
+.person:nth-child(1)
+{
+    height:256px;
+
+    .position
+    {
+    	font-size:180px;
+        top:38px;
+        left:38px;
+    }
+    
+    .profile
+    {
+    	width:130px;
+    	top:74px;
+    	left:185px;
+    }
+    
+    .name
+    {
+    	font-size:90px;
+        top:86px;
+        left:370px;
+    }
+}
+
+.joinwrapper
+{
+    height:256px;
+    width:100%;
+    position:fixed;
+    top: 768px;
+    background-color:red;
+    
+    .joinbutton
+    {
+    	position:absolute;
+    	height:210px;
+    	background-color:blue;
+    	top:20px;
+    	left:20px;
+    	width:974px;
+    	text-align: center;
+    	font-size:140px;
+    	line-height:215px;
+    }
+}
