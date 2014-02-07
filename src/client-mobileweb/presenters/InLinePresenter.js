@@ -151,7 +151,7 @@ lineapp.InLineConfigPresenter = lineapp.InLineConfigPresenter || function(params
 
                     view.setPosition(index+1);
                     view.setTimeInLine(person.joinTimestamp);
-                    view.setAsk(person.ask.amount);
+                    view.setAsk((person.ask || {}).amount || 500);
 
                     view.setEta(1000); // TODO!
                     view.setTotalEarned(0); // TODO!
