@@ -6,18 +6,22 @@
 	width:100%;
 	background-size:100%;
 	background-repeat:no-repeat;
-	
-	text
+
+	.text
 	{
 		position: absolute;
-		font-size:36px;
+		top:342px;
+		left:101px;
+		font-size:18px;
 		color:white;
 	}
 	
-    button
+    .button
     {
-        position:relative;
-        top:100px;
-        left:50px;
+        position:absolute;
+        top:409px;
+        left:13px;
+        width:295px;
+        height:45px;
     }
 }

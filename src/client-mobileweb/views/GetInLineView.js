@@ -8,11 +8,11 @@ lineapp.GetInLineView = lineapp.GetInLineView || function(params) { return (func
 
     var wrapper = $("<div></div>", {"class":"lineapp_getinlineview_wrapper"});
     
-    var text = $("<span></span>")
+    var text = $("<span class=\"text\"></span>")
                     .text(lineManagement.getLines().NORMAL.length)
                     .appendTo(wrapper);
 
-    var button = $("<div></div>").appendTo(wrapper);
+    var button = $("<div class=\"button\"></div>").appendTo(wrapper);
 
     button.on("click", function() {
         self.fireEvent("lineup");
