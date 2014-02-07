@@ -10,8 +10,8 @@ mkdir $DIST
 
 egrep -v "^include" ./lib/http -d recurse -h --include "*.js" >> $BUILD/app.js
 
-egrep -v "^include" ./src/common -d recurse -h --include "*.js" --exclude "app.js" >> $BUILD/app.js
-egrep -v "^include" ./src/client-mobileweb -d recurse -h --include "*.js" --exclude "app.js" >> $BUILD/app.js
+egrep -v "^include" ./src/common -d recurse -h --include "*.js" --exclude "app.js" --exclude "app-wall.js" >> $BUILD/app.js
+egrep -v "^include" ./src/client-mobileweb -d recurse -h --include "*.js" --exclude "app.js" --exclude "app-wall.js" >> $BUILD/app.js
 egrep -v "^include" ./src/client-mobileweb -d recurse -h --include "app.js">> $BUILD/app.js
 
 cat $BUILD/app.js | perl -pe 's/\r//g' > $DIST/app.js
