@@ -13,6 +13,10 @@ lineapp.InLineApprovePayPresenter = lineapp.InLineApprovePayPresenter || functio
         self.fireEvent("close");
     });
 
+    view.addEventListener("continue", function() {
+        self.fireEvent("continue");
+    });
+    
     self.getView = function() {
         return view;
     };

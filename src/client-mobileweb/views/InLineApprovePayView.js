@@ -9,24 +9,19 @@ lineapp.InLineApprovePayView = lineapp.InLineApprovePayView || function(params) 
 
     var wrapper = $("<div></div>", {"class":"lineapp_inlineapprovepayview_wrapper"});
 
-    var uniqueId = _.uniqueId();
-
     $("<div class='header'></div>").appendTo(wrapper);
     $("<div class='info'></div>").html("You are about to cut "+requests.length+" people in line for a miniscule sum of:").appendTo(wrapper);
     $("<div class='amount'></div>").html("$"+(_.reduce(requests, function(memo, request){ return memo + request.amount; }, 0)/100)).appendTo(wrapper);
     $("<div class='close'></div>").appendTo(wrapper).on("click", function() {
-        self.fireEvent("close");
+        self.fireEvent("close", {});
     });
     
-    wrapper.append($(
-        '<form id="form" action="https://www.sandbox.paypal.com/webapps/adaptivepayment/flow/pay" target="PPDGFrame" class="standard">' +
-        '<input type="submit" id="' + uniqueId + '" class="submitbutton">' +
-        '<input id="type" type="hidden" name="expType" value="mini">' +
-        '<input id="paykey" type="hidden" name="paykey" value="'+payKey+'">' +
-        '</form>'));
-
-    var embeddedPPFlow = new PAYPAL.apps.DGFlow({trigger:uniqueId});
-
+    var button = $('<input type="submit" class="submitbutton">');
+    button.click(function() {
+    	self.fireEvent("continue", {});
+    });
+    wrapper.append(button);
+    
     self.getDom = function() {
         return wrapper;
     };

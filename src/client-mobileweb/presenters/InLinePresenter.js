@@ -63,21 +63,35 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
         lineapp.LineAppService.request({
             request:{
                 "type":"create_payment",
-                "paymentRequests":requests,
-                successUrl : view.getSuccessUrl(),
-                errorUrl : view.getErrorUrl()
+                "paymentRequests":requests
             },
             callback:function(e) {
                 if (e.error) {
                     alert(e.error.message);
                     return;
                 }
+                
+                var payKey = e.value.payKey || null;
 
-                var presenter = lineapp.InLineApprovePayPresenter({payKey:e.value.payKey, requests:requests});
+                var presenter = lineapp.InLineApprovePayPresenter({payKey:payKey, requests:requests});
                 view.fillApprovePay(presenter.getView());
 
                 presenter.addEventListener("close", function() {
                     view.closeApprovePay();
+                });
+                
+                presenter.addEventListener("continue", function() {
+                    view.closeApprovePay();
+                    
+                    var payDialogPresenter = new lineapp.PayDialogPresenter({
+                    	payKey : payKey
+                    });
+                    payDialogPresenter.addEventListener("done", function(e) {
+                    	var e = e || {};
+                    	var status = e.status || null;
+                    	
+                    	console.log(status);
+                    });
                 });
 
                 /*
