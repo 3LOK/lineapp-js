@@ -4,17 +4,6 @@ lineapp.InLineView = lineapp.InLineView || function(params) { return (function(p
 
     var self = new lineapp.EventHub();
 
-    var baseUrl = window.location.href;
-    baseUrl = baseUrl.substr(0, baseUrl.lastIndexOf("/") + 1);
-    
-    self.getSuccessUrl = function() {
-    	return baseUrl + "paypal_success.html";
-    };
-    
-    self.getErrorUrl = function() {
-    	return baseUrl + "paypal_error.html";
-    };
-
     var wrapper = $("<div></div>", {"class":"lineapp_inlineview_wrapper"});
 
     var config = $("<div></div>", {"class":"config"}).appendTo(wrapper);
