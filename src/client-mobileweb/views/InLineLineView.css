@@ -21,6 +21,17 @@
         background-size:cover;
     }
 
+    .dotted
+    {
+        position:absolute;
+        width:1px;
+        left:159px;
+        height:173px;
+        background:url(dotted.png);
+        background-size:cover;
+        top: 85px;
+    }
+
     .totalthere
     {
         position: absolute;
@@ -121,10 +132,15 @@
     }
 
     .desk {
-        width:80px;
-        height:109px;
-        background:black;
-        float:left;
+        width: 160px;
+        height: 160px;
+        float: left;
+        background: url(desk.png);
+        background-size: 90%;
+        position: relative;
+        top: -20px;
+        background-repeat: no-repeat;
+        background-position: center;
     }
 
     .person 
@@ -136,6 +152,7 @@
         top:0px;
         overflow:visible;
         cursor:pointer;
+        margin-left:10px;
     }
 
     .creature1

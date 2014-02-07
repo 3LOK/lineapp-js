@@ -10,10 +10,11 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
 
     var sargel = $("<div></div>", {"class":"sargel"}).appendTo(wrapper);
 
+    var dotted = $("<div></div>", {"class":"dotted"}).appendTo(wrapper);
+
     var inner = $("<div></div>", {"class":"inner"}).appendTo(wrapper);
 
     var waitingLine = $("<div></div>", {"class":"waitingline"}).appendTo(inner);
-    $("<div></div>", {"class":"desk"}).appendTo(waitingLine);
     $("<div></div>", {"class":"desk"}).appendTo(waitingLine);
 
     var vipLine = $("<div></div>", {"class":"vipline"}).appendTo(waitingLine);
@@ -59,24 +60,23 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         _.each(peopleDivs, function(personDiv, id) {
             var left = parseInt(personDiv.dom.css("left"));
 
-            console.log("center", center, "myLeft", myLeft, "left", left);
-
             if ((left >= center-160 /* Desk */) && (left < myLeft)) {
                 total += parseInt(personDiv.ask.html().substr(1));
             }
         });
 
+        /*
         clearTimeout($.data(this, 'scrollTimer'));
         $.data(this, 'scrollTimer', setTimeout(function() {
             var newPos = parseInt(inner.scrollLeft()/CREATOR_WIDTH_AND_MARGIN+0.5)*CREATOR_WIDTH_AND_MARGIN;
             inner.animate({scrollLeft:newPos});
         }, 250));
+       */
 
-        console.log(total);
         if (total > 0) {
             totalThere.html("$"+total);
         } else {
-            totalThere.html("");
+            totalThere.html("$0");
         }
     });
 
@@ -164,8 +164,6 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
 
         var topAnimation = animations.shift();
 
-        console.log("Animating", topAnimation.type);
-
         switch(topAnimation.type) {
             case "join":
                 onJoinEventInner(topAnimation.params);
@@ -185,7 +183,6 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
 
     function onJoinEventInner(params) {
         var person = params.person;
-        console.log(person);
         addPerson(person, normalLine);
     }
 
@@ -193,7 +190,6 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         var person = params.person;
 
         var startLeft = parseInt(peopleDivs[person.id].dom.css("left"));
-        console.log(startLeft);
 
         var numAnimations = 0;
 

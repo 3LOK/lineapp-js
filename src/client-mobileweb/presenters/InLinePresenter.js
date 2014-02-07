@@ -58,6 +58,8 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
         var requests = _.pluck(clientIds, "ask");
         var clientIds = _.pluck(clientIds, "clientId");
 
+        console.log(requests);
+
         view.showApprovePay();
 
         lineapp.LineAppService.request({
