@@ -1,6 +1,7 @@
 .wall
 {
     height:1024px;
+    width:768px;
 }
 
 
@@ -10,7 +11,7 @@
     width:100%;
     height:128px;
     min-height:100%;
-    background:white;
+    color: #9ed89d;
 
     .position
     {
@@ -40,6 +41,7 @@
 .person:nth-child(1)
 {
     height:256px;
+    color: white;
 
     .position
     {
@@ -69,18 +71,19 @@
     width:100%;
     position:fixed;
     top: 768px;
-    background-color:red;
     
     .joinbutton
     {
     	position:absolute;
+    	color : #9c9a43;
+    	background-color: #fffd89;
+    	border: 1px solid #e5e365;
     	height:210px;
-    	background-color:blue;
     	top:20px;
     	left:20px;
-    	width:974px;
+    	width:726px;
     	text-align: center;
-    	font-size:140px;
+    	font-size:90px;
     	line-height:215px;
     }
 }
