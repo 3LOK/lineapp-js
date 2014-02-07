@@ -58,6 +58,10 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
         var requests = _.pluck(clientIds, "ask");
         var clientIds = _.pluck(clientIds, "clientId");
 
+        _.each(requests, function(req, index) {
+            req.destination = "demo"+parseInt(Math.random()*100)+"@gmail.com";
+        });
+
         view.showApprovePay();
 
         lineapp.LineAppService.request({
