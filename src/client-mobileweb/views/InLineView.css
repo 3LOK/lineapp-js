@@ -3,11 +3,16 @@
     height:100%;
     min-height:100%;
 
-    .config,
+    .config
+    {
+        height:240px;
+        min-height:240px;
+    }
+
     .line
     {
-        height:50%;
-        min-height:50%;
+        height:328px;
+        min-height:328px;
     }
 
     .approvepaymentmask

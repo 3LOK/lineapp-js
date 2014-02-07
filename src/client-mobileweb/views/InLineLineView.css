@@ -26,6 +26,11 @@
         position:absolute;
         top:0px;
         left:0px;
+        font-family:Arial;
+        font-weight:bold;
+        color:#fffec9;
+        font-size:26px; 
+        letter-spacing:-0.05em
     }
 
     .waitingline

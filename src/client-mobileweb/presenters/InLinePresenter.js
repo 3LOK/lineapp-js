@@ -89,8 +89,13 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
                     payDialogPresenter.addEventListener("done", function(e) {
                     	var e = e || {};
                     	var status = e.status || null;
-                    	
-                    	console.log(status);
+
+                        if (status === "success") {
+                            lineManagement.performEvents([{type:"swap", 
+                                                         clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}, 
+                                                         clientIds:clientIds,
+                                                         payKey:payKey}]);
+                        }
                     });
                 });
 
@@ -103,10 +108,6 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
 
         /*
 
-        lineManagement.performEvents([{type:"swap", 
-                                     clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}, 
-                                     clientIds:clientIds,
-                                     payKey:"TODO"}]);
                                     */
     });
 
