@@ -27,7 +27,7 @@ lineapp.InLineConfigView = lineapp.InLineConfigView || function(params) { return
     }
     //var timeInLine = $("<div></div>", {"class":"timeinline"}).appendTo(wrapper);
     var totalEarned = $("<div></div>").appendTo(wrapper);
-    var leave = $("<button></button>", {"id":"leave"}).html("Leave").appendTo(logo);
+    var leave = $("<button></button>").html("Leave").appendTo(logo);
 
     leave.on("click", function() {
         self.fireEvent("leave");
