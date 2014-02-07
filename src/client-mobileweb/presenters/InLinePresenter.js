@@ -58,8 +58,12 @@ lineapp.InLinePresenter = lineapp.InLinePresenter || function(params) { return (
         var requests = _.pluck(clientIds, "ask");
         var clientIds = _.pluck(clientIds, "clientId");
 
-        _.each(requests, function(req, index) {
-            req.destination = "demo"+parseInt(Math.random()*100)+"@gmail.com";
+        requests = _.map(requests, function(request) {
+            request = request || {};
+            request.destination = "demo"+parseInt(Math.random()*100)+"@gmail.com";
+            request.currency = "USD";
+            request.amount = request.amount || 500;
+            return request;
         });
 
         view.showApprovePay();
@@ -137,7 +141,7 @@ lineapp.InLineConfigPresenter = lineapp.InLineConfigPresenter || function(params
 
     var view = new lineapp.InLineConfigView();
 
-    self.update = function() {
+    function update() {
         var lines = lineManagement.getLines();
 
         _.each(lines, function(line) {
@@ -147,7 +151,7 @@ lineapp.InLineConfigPresenter = lineapp.InLineConfigPresenter || function(params
 
                     view.setPosition(index+1);
                     view.setTimeInLine(person.joinTimestamp);
-                    view.setAsk(person.ask);
+                    view.setAsk(person.ask.amount);
 
                     view.setEta(1000); // TODO!
                     view.setTotalEarned(0); // TODO!
@@ -157,7 +161,7 @@ lineapp.InLineConfigPresenter = lineapp.InLineConfigPresenter || function(params
         });
     };
 
-    self.update();
+    update();
 
     view.addEventListener("leave", function() {
         self.fireEvent("leave");
@@ -169,7 +173,10 @@ lineapp.InLineConfigPresenter = lineapp.InLineConfigPresenter || function(params
                                      clientId:{ns:"com.facebook", id:lineapp.Facebook.getUid()}}]);
     });
 
+    lineManagement.addEventListener("changed", update);
+
     self.close = function() {
+        lineManagement.removeEventListener("changed", update);
         view.close();
     };
 

@@ -14,6 +14,14 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
 
     var inner = $("<div></div>", {"class":"inner"}).appendTo(wrapper);
 
+    var partner = null;
+
+    var cutTheLine = $("<div></div>", {"class":"cutbutton"})
+        .appendTo(wrapper)
+        .on("click", function() {
+            self.fireEvent("swap", {partner:partner.id});
+        });
+
     var waitingLine = $("<div></div>", {"class":"waitingline"}).appendTo(inner);
     $("<div></div>", {"class":"desk"}).appendTo(waitingLine);
 
@@ -57,21 +65,25 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
             }
         });
 
+        partner = null;
+
         _.each(peopleDivs, function(personDiv, id) {
             var left = parseInt(personDiv.dom.css("left"));
 
+            personDiv.eta.html(parseInt(left/3) + " mins");
+
             if ((left >= center-160 /* Desk */) && (left < myLeft)) {
                 total += parseInt(personDiv.ask.html().substr(1));
+
+                if (!partner) {
+                    partner = {left:left, id:id};
+                } else if (left < partner.left) {
+                    partner = {left:left, id:id};
+                }
             }
         });
 
-        /*
-        clearTimeout($.data(this, 'scrollTimer'));
-        $.data(this, 'scrollTimer', setTimeout(function() {
-            var newPos = parseInt(inner.scrollLeft()/CREATOR_WIDTH_AND_MARGIN+0.5)*CREATOR_WIDTH_AND_MARGIN;
-            inner.animate({scrollLeft:newPos});
-        }, 250));
-       */
+        console.log(partner);
 
         if (total > 0) {
             totalThere.html("$"+total);
@@ -110,12 +122,6 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
             dom.addClass("creature"+((person.id % 3) +1));
 
             peopleDivs[person.id] = {dom:dom, spot:spot, info:info, ask:ask, eta:eta};
-
-            if (person.id !== lineapp.Facebook.getUid()) {
-                dom.on("click", function() {
-                    self.fireEvent("swap", {partner:person.id});
-                });
-            }
         });
     }
 

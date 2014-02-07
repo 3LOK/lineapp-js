@@ -6,7 +6,6 @@
 
     .inner
     {
-        height:100%;
         width: 100%;
         position:relative;
         overflow-x: auto;
@@ -30,6 +29,17 @@
         background:url(dotted.png);
         background-size:cover;
         top: 85px;
+    }
+
+    .cutbutton 
+    {
+        width:300px;
+        height:37px;
+        position: relative;
+        top: -10px;
+        margin:auto;
+        background:url(cut-the-line.png);
+        background-size:cover;
     }
 
     .totalthere
