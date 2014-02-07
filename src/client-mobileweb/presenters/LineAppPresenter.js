@@ -88,7 +88,9 @@ lineapp.LineAppPresenter = lineapp.LineAppPresenter || function(params) { return
     }
 
     function onNotInLine() {
-        var presenter = new lineapp.GetInLinePresenter();
+        var presenter = new lineapp.GetInLinePresenter({
+        	lineManagement : lineManagement
+        });
         view.showGetInLineView(presenter.getView());
 
         // Listen to join line request

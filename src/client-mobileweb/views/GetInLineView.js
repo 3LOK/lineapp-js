@@ -1,14 +1,18 @@
 var lineapp = lineapp || {};
 
 lineapp.GetInLineView = lineapp.GetInLineView || function(params) { return (function(params) {
+	params = params || {};
+	var lineManagement = params.lineManagement || null;
 
     var self = new lineapp.EventHub();
 
     var wrapper = $("<div></div>", {"class":"lineapp_getinlineview_wrapper"});
-
-    var button = $("<button></button>")
-                    .html("Get In Line!")
+    
+    var text = $("<span></span>")
+                    .text(lineManagement.getLines().NORMAL.length)
                     .appendTo(wrapper);
+
+    var button = $("<div></div>").appendTo(wrapper);
 
     button.on("click", function() {
         self.fireEvent("lineup");
