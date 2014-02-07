@@ -8,15 +8,22 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
 
     var wrapper = $("<div></div>", {"class":"lineapp_inlinelineview_wrapper"});
 
-    var waitingLine = $("<div></div>", {"class":"waitingline"}).appendTo(wrapper);
+    var sargel = $("<div></div>", {"class":"sargel"}).appendTo(wrapper);
+
+    var inner = $("<div></div>", {"class":"inner"}).appendTo(wrapper);
+
+    var waitingLine = $("<div></div>", {"class":"waitingline"}).appendTo(inner);
+    $("<div></div>", {"class":"desk"}).appendTo(waitingLine);
     $("<div></div>", {"class":"desk"}).appendTo(waitingLine);
 
     var vipLine = $("<div></div>", {"class":"vipline"}).appendTo(waitingLine);
     var normalLine = $("<div></div>", {"class":"normalline"}).appendTo(waitingLine);
 
-    var CREATOR_WIDTH_AND_MARGIN = 78;
+    var totalThere = $("<div></div>", {"class":"totalthere"}).appendTo(wrapper);
 
-    var lineWidth = CREATOR_WIDTH_AND_MARGIN;
+    var CREATOR_WIDTH_AND_MARGIN = 80;
+
+    var lineWidth = CREATOR_WIDTH_AND_MARGIN*2;
 
     self.initLines = function(lines) {
         vipLine.empty();
@@ -31,7 +38,47 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
             addPerson(person, normalLine);
         })
 
+        inner.scroll();
     };
+
+    inner.scroll(function(e) {
+
+        var scrollLeft = inner.scrollLeft();
+        var center = parseInt(scrollLeft/CREATOR_WIDTH_AND_MARGIN+0.5)*CREATOR_WIDTH_AND_MARGIN + 160;
+
+        var total = 0;
+
+        var myLeft = 0;
+
+        _.each(peopleDivs, function(personDiv, id) {
+            if (id === lineapp.Facebook.getUid()) {
+                myLeft = parseInt(personDiv.dom.css("left"));
+            }
+        });
+
+        _.each(peopleDivs, function(personDiv, id) {
+            var left = parseInt(personDiv.dom.css("left"));
+
+            console.log("center", center, "myLeft", myLeft, "left", left);
+
+            if ((left >= center-160 /* Desk */) && (left < myLeft)) {
+                total += parseInt(personDiv.ask.html().substr(1));
+            }
+        });
+
+        clearTimeout($.data(this, 'scrollTimer'));
+        $.data(this, 'scrollTimer', setTimeout(function() {
+            var newPos = parseInt(inner.scrollLeft()/CREATOR_WIDTH_AND_MARGIN+0.5)*CREATOR_WIDTH_AND_MARGIN;
+            inner.animate({scrollLeft:newPos});
+        }, 250));
+
+        console.log(total);
+        if (total > 0) {
+            totalThere.html("$"+total);
+        } else {
+            totalThere.html("");
+        }
+    });
 
     function addPerson(person, line) {
         lineWidth += CREATOR_WIDTH_AND_MARGIN;
@@ -40,7 +87,7 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
         var spot = $("<div></div>", {"class":"spotsaver"}).appendTo(line);
         _.defer(function() {
             var dom = $("<div></div>", {"class":"person"})
-                .css({left:spot.position().left+5})
+                .css({left:spot.position().left})
                 .hide()
                 .appendTo(line)
                 .fadeIn({complete:nextAnimation});
@@ -50,7 +97,7 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
 
             var info = $("<div></div>", {"class":"info"}).appendTo(dom);
             var ask = $("<div></div>", {"class":"ask"}).appendTo(dom);
-            ask.html("$"+(person.ask || {}).amount/100 || "5");
+            ask.html("$"+((person.ask || {}).amount || 500)/100);
 
             var eta = $("<div></div>", {"class":"timeinline"})
                 .html("12 mins")
@@ -108,6 +155,7 @@ lineapp.InLineLineView = lineapp.InLineLineView || function(params) { return (fu
 
     function nextAnimation() {
         if (animations.length === 0) {
+            inner.scroll();
             inAnimations = false;
             return;
         }
