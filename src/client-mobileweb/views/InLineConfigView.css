@@ -68,7 +68,7 @@
 	letter-spacing:-0.05em;
 	text-align: center;
 	top: 99px;
-	left: 166px;
+	left: 165px;
 	width: 63px;
 	height: 37px;
 	overflow: hidden;
@@ -107,7 +107,7 @@
 	font-weight: bold;
 	font-size: 29px;
 	margin-top: -3px;
-	margin-left: -1px;
+	margin-left: -4px;
    }
    #cashbox {
 	position: absolute;
@@ -119,6 +119,6 @@
    }
    #leave {
 	position: absolute;
-	top: 10px;
+	top: 12px;
    }
 }
